@@ -1,4 +1,4 @@
-name: Linux Generic x64
+name: Build and Publish
 
 on:
   push:
@@ -19,7 +19,9 @@ jobs:
         dotnet-version: 3.1.101
     - name: Install dependencies
       run: dotnet restore
-    - name: Build for Linux x64
+    - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+    - name: Publish | Linux x64
+      run: dotnet publish -p:PublishTrimmed=true --configuration Release --output publish --runtime linux-x64 --self-contained true
