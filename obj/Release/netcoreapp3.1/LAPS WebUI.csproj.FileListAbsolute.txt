@@ -125,7 +125,6 @@ H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\r
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\ressources\select2\css\select2-bootstrap4.css
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\ressources\select2\css\select2.min.css
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\ressources\select2\js\select2.min.js
-H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\settings.json
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\LAPS WebUI.exe
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\NLog.config
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\LAPS WebUI.deps.json
@@ -208,3 +207,5 @@ H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\obj\Release\netcoreapp3.1\L
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\obj\Release\netcoreapp3.1\LAPS WebUI.dll
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\obj\Release\netcoreapp3.1\LAPS WebUI.pdb
 H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\obj\Release\netcoreapp3.1\LAPS WebUI.genruntimeconfig.cache
+H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\bin\Release\netcoreapp3.1\settings.json.example
+H:\Tim\programming\C#\Projekte\LAPS WebUI\LAPS WebUI\obj\Release\netcoreapp3.1\LAPS WebUI.csprojAssemblyReference.cache

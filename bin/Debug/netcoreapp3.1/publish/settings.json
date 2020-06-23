@@ -1,5 +1,0 @@
-﻿{
-  "LDAPServer": "ldap.prime.k-sys.io",
-  "LDAPServerPort": 636,
-  "UseSSL": true
-}
