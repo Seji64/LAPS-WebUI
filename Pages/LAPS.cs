@@ -159,7 +159,9 @@ namespace LAPS_WebUI
             using DirectoryEntry domainEntry = new DirectoryEntry(string.Format("LDAP://{0}:{1}/{2}", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, defaultNamingContext), UserSession.loginData.Username, UserSession.loginData.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None);
             var filter = "(&(objectCategory=computer)(name=" + name + "))";
 
-            using var dirSearch = new DirectorySearcher(domainEntry, filter);
+            var PropertiesToLoad = new string[] { "cn", "ms-Mcs-AdmPwd", "ms-MCS-AdmPwdExpirationTime" };
+            using var dirSearch = new DirectorySearcher(domainEntry, filter, PropertiesToLoad);
+
             var dirSearchResult = dirSearch.FindOne();
 
             if (null != dirSearchResult)

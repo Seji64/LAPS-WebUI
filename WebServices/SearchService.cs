@@ -83,7 +83,11 @@ namespace LAPS_WebUI.WebServices
 
                 using DirectoryEntry domainEntry = new DirectoryEntry(string.Format("LDAP://{0}:{1}/{2}", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, defaultNamingContext), UserSession.loginData.Username, UserSession.loginData.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None);
                 var filter = string.Format("(&(objectCategory=computer)(name={0}*))", searchTerm);
-                using var dirSearch = new DirectorySearcher(domainEntry, filter);
+                var PropertiesToLoad = new string[] { "cn" };
+                using var dirSearch = new DirectorySearcher(domainEntry, filter, PropertiesToLoad);
+
+               
+
                 var dirSearchResult = dirSearch.FindAll();
 
                 if (dirSearchResult != null)
