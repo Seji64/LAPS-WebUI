@@ -33,7 +33,7 @@ namespace LAPS_WebUI
                 ClipboardJS.AppendTo(thisDocument.Head);
                 FontAwesome.AppendTo(thisDocument.Head);
 
-                thisDocument.Head.AppendChild(new Script { Src = "/js/helper.js", Defer = true });
+                thisDocument.Head.AppendChild(new Script { Src = "/ressources/js/helper.js", Defer = true });
 
                 var builder = new LaraBuilder(thisDocument.Body);
 
