@@ -47,7 +47,7 @@ namespace LAPS_WebUI
 
                 m_log.Info("Publishing ressources....");
 
-                List<string> allowedFileTypes = new List<string>() { ".js", ".css", ".svg", ".woff", ".woff2" ".ttf" };
+                List<string> allowedFileTypes = new List<string>() { ".js", ".css", ".svg", ".woff", ".woff2", ".ttf" };
 
                 foreach(var file in Directory.GetFiles(Path.Combine(currentDir, "ressources"), "*.*", SearchOption.AllDirectories).Where(x => allowedFileTypes.Contains(new FileInfo(x).Extension.ToLower()) == true )){
 
