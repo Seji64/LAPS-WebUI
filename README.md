@@ -4,7 +4,6 @@ A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 ## Setup Preqesites
 
 - A working Active Directory with Microsoft LAPS installed
-- A .NET Core compatible Host (Linux or Windows)
 
 ## Setup:
 
