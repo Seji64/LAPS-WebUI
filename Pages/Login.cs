@@ -2,9 +2,10 @@
 using LAPS_WebUI.PageData;
 using NLog;
 using System;
-using System.DirectoryServices;
 using System.Threading.Tasks;
 using LAPS_WebUI.Ressources;
+using Logger = NLog.Logger;
+using LdapForNet;
 
 namespace LAPS_WebUI.Pages
 {
@@ -114,6 +115,8 @@ namespace LAPS_WebUI.Pages
             bool authResult = false;
             Logger m_log = LogManager.GetLogger("OnLogin");
 
+            LdapConnection ldapConnection = new LdapConnection();
+
             try
             {
 
@@ -122,25 +125,24 @@ namespace LAPS_WebUI.Pages
                     throw new Exception("Empty fileds");
                 }
 
-                using (var domainEntry = new DirectoryEntry(string.Format("LDAP://{0}:{1}", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port), m_logindata.Username, m_logindata.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None))
+                ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
+
+                ldapConnection.Bind(LdapForNet.Native.Native.LdapAuthMechanism.SIMPLE,m_logindata.Username, m_logindata.Password);
+
+                var test = ldapConnection.GetRootDse();
+
+                if (test is null)
                 {
-                    if (domainEntry.NativeObject != null)
-                    {
-                        authResult = true;
-                    }
+                    throw new Exception("LDAP Connection failed!");
                 }
-                
+
+                authResult = true;
+
                 if (!authResult)
                 {
                     loginMessage.InnerText = "Login failed - Wrong Username or Password";
                     loginMessage.SetFlagAttribute("hidden", false);
                 }
-            }
-            catch (DirectoryServicesCOMException ex)
-            {
-                loginMessage.InnerText = "Login failed";
-                loginMessage.SetFlagAttribute("hidden", false);
-                m_log.Warn("Login for User {0} failed => {1}", m_logindata.Username,ex.Message);
             }
             catch (Exception ex)
             {
@@ -150,6 +152,12 @@ namespace LAPS_WebUI.Pages
             }
             finally
             {
+
+                if (ldapConnection != null)
+                {
+                    ldapConnection.Dispose();
+                }
+
                if (authResult)
                {
                     UserSession.LoggedIn = true;

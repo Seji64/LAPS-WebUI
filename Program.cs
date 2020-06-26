@@ -1,4 +1,5 @@
 ﻿using Integrative.Lara;
+using LAPS_WebUI.WebServices;
 using Microsoft.Extensions.Configuration;
 using NLog;
 using System;
@@ -97,6 +98,17 @@ namespace LAPS_WebUI
 
                 m_log.Info("Done!");
 ;
+                m_log.Info("Publishing services...");
+
+                app.PublishService(new WebServiceContent
+                {
+                    Address = "/search",
+                    Factory = () => new SearchService()
+
+                });
+
+                m_log.Info("Done!");
+
                 m_log.Info("LAPS WEB UI is up and running!");
                 m_log.Info("Web Server is listening on {0}:{1}", settings.ListenAddress, settings.ListenPort);
 

@@ -1,14 +1,16 @@
 ﻿using Integrative.Lara;
+using LdapForNet;
+using LdapForNet.Native;
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.DirectoryServices;
 using System.Linq;
 using System.Threading.Tasks;
+using Logger = NLog.Logger;
 
 namespace LAPS_WebUI.WebServices
 {
-    [LaraWebService(Address = "/search", Method = "GET")]
+    [LaraWebService(Address = "/search", Method = "GET", ContentType = "application/json")]
     class SearchService : IWebService
     {
         public Task<string> Execute()
@@ -21,7 +23,7 @@ namespace LAPS_WebUI.WebServices
             }
             else
             {
-
+                
                 if (LaraUI.Service.Http.Request.Query.Count != 0)
                 {
 
@@ -78,25 +80,29 @@ namespace LAPS_WebUI.WebServices
 
             try
             {
-                var rootDSE = new DirectoryEntry(string.Format("LDAP://{0}:{1}/rootDSE", Settings.ThisInstance.LDAP.Server,Settings.ThisInstance.LDAP.Port), UserSession.loginData.Username, UserSession.loginData.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None);
-                var defaultNamingContext = rootDSE.Properties["defaultNamingContext"].Value.ToString();
 
-                using DirectoryEntry domainEntry = new DirectoryEntry(string.Format("LDAP://{0}:{1}/{2}", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, defaultNamingContext), UserSession.loginData.Username, UserSession.loginData.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None);
                 var filter = string.Format("(&(objectCategory=computer)(name={0}*))", searchTerm);
                 var PropertiesToLoad = new string[] { "cn" };
-                using var dirSearch = new DirectorySearcher(domainEntry, filter, PropertiesToLoad);
 
-               
-
-                var dirSearchResult = dirSearch.FindAll();
-
-                if (dirSearchResult != null)
+                using (var ldapConnection = new LdapConnection())
                 {
+                    ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
+                    ldapConnection.Bind(Native.LdapAuthMechanism.SIMPLE, UserSession.loginData.Username, UserSession.loginData.Password);
 
-                    Parallel.ForEach(dirSearchResult.Cast<System.DirectoryServices.SearchResult>(), (entry) =>
+                    var defaultNamingContext = ldapConnection.GetRootDse().Attributes["defaultNamingContext"].First().ToString();
+                    var ldapSearchResults = ldapConnection.Search(defaultNamingContext, filter, PropertiesToLoad, Native.LdapSearchScope.LDAP_SCOPE_SUB);
+
+                    foreach (var ldapSearchResult in ldapSearchResults)
                     {
-                        searchResult.Add(new ADComputer(entry.Properties["cn"][0].ToString()));
-                    });
+                        try
+                        {
+                            searchResult.Add(new ADComputer(ldapSearchResult.Attributes["cn"].First().ToString()));
+                        }
+                        catch (Exception ex)
+                        {
+                            m_log.Error(ex.Message);
+                        }
+                    }
                 }
             }
             catch (Exception ex)

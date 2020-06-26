@@ -1,9 +1,12 @@
 ﻿using Integrative.Lara;
 using NLog;
 using System;
-using System.DirectoryServices;
 using System.Threading.Tasks;
 using LAPS_WebUI.Ressources;
+using Logger = NLog.Logger;
+using LdapForNet;
+using LdapForNet.Native;
+using System.Linq;
 
 namespace LAPS_WebUI
 {
@@ -153,50 +156,59 @@ namespace LAPS_WebUI
 
             Logger m_log = LogManager.GetLogger("GetADComputerByName");
 
-            var rootDSE = new DirectoryEntry(string.Format("LDAP://{0}:{1}/rootDSE", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port), UserSession.loginData.Username, UserSession.loginData.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None);
-            var defaultNamingContext = rootDSE.Properties["defaultNamingContext"].Value.ToString();
-
-            using DirectoryEntry domainEntry = new DirectoryEntry(string.Format("LDAP://{0}:{1}/{2}", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, defaultNamingContext), UserSession.loginData.Username, UserSession.loginData.Password, Settings.ThisInstance.LDAP.UseSSL ? AuthenticationTypes.SecureSocketsLayer : AuthenticationTypes.None);
             var filter = "(&(objectCategory=computer)(name=" + name + "))";
-
             var PropertiesToLoad = new string[] { "cn", "ms-Mcs-AdmPwd", "ms-MCS-AdmPwdExpirationTime" };
-            using var dirSearch = new DirectorySearcher(domainEntry, filter, PropertiesToLoad);
 
-            var dirSearchResult = dirSearch.FindOne();
-
-            if (null != dirSearchResult)
+            try
             {
-                ADComputer rt = null;
 
-                try
+                using (var ldapConnection = new LdapConnection())
                 {
-                    rt = new ADComputer(dirSearchResult.Properties["cn"][0].ToString());
+                    ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
+                    ldapConnection.Bind(LdapForNet.Native.Native.LdapAuthMechanism.SIMPLE, UserSession.loginData.Username, UserSession.loginData.Password);
 
-                    if (dirSearchResult.Properties.Contains("ms-Mcs-AdmPwd") && dirSearchResult.Properties["ms-Mcs-AdmPwd"].Count != 0)
+                    var defaultNamingContext = ldapConnection.GetRootDse().Attributes["defaultNamingContext"].First().ToString();
+                    var ldapSearchResults = ldapConnection.Search(defaultNamingContext, filter, PropertiesToLoad, Native.LdapSearchScope.LDAP_SCOPE_SUB);
+
+                    foreach (var ldapSearchResult in ldapSearchResults)
                     {
-                        rt.LAPSPassword = dirSearchResult.Properties["ms-Mcs-AdmPwd"][0].ToString();
-                        rt.LAPSPasswordExpireDate = DateTime.FromFileTime(Convert.ToInt64(dirSearchResult.Properties["ms-MCS-AdmPwdExpirationTime"][0].ToString()));
+                        ADComputer rt = null;
+
+                        try
+                        {
+                            rt = new ADComputer(ldapSearchResult.Attributes["cn"].First().ToString());
+
+                            if (ldapSearchResult.Attributes.Keys.Any(x => x == "ms-Mcs-AdmPwd"))
+                            {
+                                rt.LAPSPassword = ldapSearchResult.Attributes["ms-Mcs-AdmPwd"].First().ToString();
+                                rt.LAPSPasswordExpireDate = DateTime.FromFileTime(Convert.ToInt64(ldapSearchResult.Attributes["ms-Mcs-AdmPwdExpirationTime"].First().ToString()));
+                            }
+                            else
+                            {
+                                throw new Exception("No permission to retrieve LAPS Password");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            m_log.Error(ex.Message);
+
+                            if (rt != null)
+                            {
+                                m_lapsdata.ErrorMessage = ex.Message;
+                                rt.LAPSPassword = "N/A";
+                            }
+                        }
+
+                        return rt;
                     }
-                    else
-                    {
-                        throw new Exception("No permission to retrieve LAPS Password");
-                    }
-
                 }
-                catch (Exception ex)
-                {
-                    rt.LAPSPassword = "N/A";
-                    m_lapsdata.ErrorMessage = ex.Message;
-                    m_log.Error(ex.Message);
-                }
-
-                return rt;
-
             }
-            else
+            catch (Exception ex)
             {
-                return null;
+                m_log.Error(ex.Message);
             }
+
+            return null;
         }
 
     }
