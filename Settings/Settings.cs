@@ -12,6 +12,7 @@ namespace LAPS_WebUI
         public string Server { get; set; }
         public int Port { get; set; }
         public bool UseSSL { get; set; }
+        public string SearchBase { get; set; }
     }
 
     public class Settings

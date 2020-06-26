@@ -167,7 +167,17 @@ namespace LAPS_WebUI
                     ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
                     ldapConnection.Bind(LdapForNet.Native.Native.LdapAuthMechanism.SIMPLE, UserSession.loginData.Username, UserSession.loginData.Password);
 
-                    var defaultNamingContext = ldapConnection.GetRootDse().Attributes["defaultNamingContext"].First().ToString();
+                    string defaultNamingContext = string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(Settings.ThisInstance.LDAP.SearchBase))
+                    {
+                        defaultNamingContext = ldapConnection.GetRootDse().Attributes["defaultNamingContext"].First().ToString();
+                    }
+                    else
+                    {
+                        defaultNamingContext = Settings.ThisInstance.LDAP.SearchBase;
+                    }
+
                     var ldapSearchResults = ldapConnection.Search(defaultNamingContext, filter, PropertiesToLoad, Native.LdapSearchScope.LDAP_SCOPE_SUB);
 
                     foreach (var ldapSearchResult in ldapSearchResults)

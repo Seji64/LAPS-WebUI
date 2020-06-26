@@ -127,14 +127,18 @@ namespace LAPS_WebUI.Pages
 
                 ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
 
+                m_log.Info("Connection ok");
+
                 ldapConnection.Bind(LdapForNet.Native.Native.LdapAuthMechanism.SIMPLE,m_logindata.Username, m_logindata.Password);
 
-                var test = ldapConnection.GetRootDse();
+                m_log.Info("bind ok");
 
-                if (test is null)
-                {
-                    throw new Exception("LDAP Connection failed!");
-                }
+                //var test = ldapConnection.GetRootDse();
+
+                //if (test is null)
+                //{
+                //    throw new Exception("LDAP Connection failed!");
+                //}
 
                 authResult = true;
 
