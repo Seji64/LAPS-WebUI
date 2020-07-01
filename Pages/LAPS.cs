@@ -24,7 +24,7 @@ namespace LAPS_WebUI
 
             if (!UserSession.LoggedIn)
             {
-                LaraUI.Page.Navigation.Replace("/login");
+                LaraUI.Page.Navigation.Replace("/");
             }
             else
             {

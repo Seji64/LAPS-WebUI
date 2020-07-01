@@ -9,7 +9,7 @@ using LdapForNet;
 
 namespace LAPS_WebUI.Pages
 {
-    [LaraPage(Address = "/login")]
+    [LaraPage(Address = "/")]
     class Login : IPage
     {
 
@@ -19,6 +19,16 @@ namespace LAPS_WebUI.Pages
         {
 
             var thisDocument = LaraUI.Page.Document;
+
+            #region "PWA"
+
+            thisDocument.Head.AppendChild(new Script { Src = "/ressources/js/app.js", Defer = true });
+            thisDocument.Head.AppendChild(new Link { Rel = "manifest", HRef = "/ressources/manifest.json" });
+            thisDocument.Head.AppendChild(new Link { Rel = "apple-touch-icon", HRef = "/ressources/images/logo-96x96.png" });
+            thisDocument.Head.AppendChild(new Meta { Name = "theme-color", Content = "#848482" });
+
+            #endregion
+
 
             if (UserSession.LoggedIn)
             {

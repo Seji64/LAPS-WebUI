@@ -42,13 +42,12 @@ namespace LAPS_WebUI
                     Mode = ApplicationMode.Default,
                     PublishAssembliesOnStart = true,
                     Port = settings.ListenPort,
-                    IPAddress = IPAddress.Parse(settings.ListenAddress)
-
+                    IPAddress = IPAddress.Parse(settings.ListenAddress),
                 });
 
                 m_log.Info("Publishing ressources....");
 
-                List<string> allowedFileTypes = new List<string>() { ".js", ".css", ".svg", ".woff", ".woff2", ".ttf" };
+                List<string> allowedFileTypes = new List<string>() { ".js", ".css", ".svg", ".woff", ".woff2", ".ttf", ".png" , ".json" };
 
                 foreach(var file in Directory.GetFiles(Path.Combine(currentDir, "ressources"), "*.*", SearchOption.AllDirectories).Where(x => allowedFileTypes.Contains(new FileInfo(x).Extension.ToLower()) == true )){
 
@@ -60,6 +59,14 @@ namespace LAPS_WebUI
                     {
                         case ".js":
                             contentType = ContentTypes.ApplicationJavascript;
+                            break;
+
+                        case ".json":
+                            contentType = ContentTypes.ApplicationJson;
+                            break;
+
+                        case ".png":
+                            contentType = ContentTypes.ImagePng;
                             break;
 
                         case ".css":
@@ -91,6 +98,12 @@ namespace LAPS_WebUI
 
                     var publishPath = string.Format("/{0}/{1}", publishDir, fileInfo.Name);
 
+                    //ServiceWorker must be published at root - this is needed for PWA
+                    if (fileInfo.Name == "sw.js")
+                    {
+                        publishPath = "/sw.js";
+                    }
+                    
                     m_log.Debug("Publishing file {0}", publishPath);
 
                     app.PublishFile(publishPath, content);
