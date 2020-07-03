@@ -45,11 +45,11 @@ namespace LAPS_WebUI
                     IPAddress = IPAddress.Parse(settings.ListenAddress),
                 });
 
-                m_log.Info("Publishing ressources....");
+                m_log.Info("Publishing resources....");
 
                 List<string> allowedFileTypes = new List<string>() { ".js", ".css", ".svg", ".woff", ".woff2", ".ttf", ".png" , ".json" };
 
-                foreach(var file in Directory.GetFiles(Path.Combine(currentDir, "ressources"), "*.*", SearchOption.AllDirectories).Where(x => allowedFileTypes.Contains(new FileInfo(x).Extension.ToLower()) == true )){
+                foreach(var file in Directory.GetFiles(Path.Combine(currentDir, "resources"), "*.*", SearchOption.AllDirectories).Where(x => allowedFileTypes.Contains(new FileInfo(x).Extension.ToLower()) == true )){
 
                     var fileInfo = new System.IO.FileInfo(file);
                     var bytes = File.ReadAllBytes(file);
@@ -93,7 +93,7 @@ namespace LAPS_WebUI
                     }
 
                     var content = new StaticContent(bytes, contentType);
-                    var publishDir = fileInfo.DirectoryName.Remove(0, fileInfo.DirectoryName.IndexOf("ressources"));
+                    var publishDir = fileInfo.DirectoryName.Remove(0, fileInfo.DirectoryName.IndexOf("resources"));
                     publishDir = publishDir.Replace(Path.DirectorySeparatorChar, '/');
 
                     var publishPath = string.Format("/{0}/{1}", publishDir, fileInfo.Name);

@@ -2,7 +2,7 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
-using LAPS_WebUI.Ressources;
+using LAPS_WebUI.resources;
 using Logger = NLog.Logger;
 using LdapForNet;
 using LdapForNet.Native;
@@ -36,7 +36,7 @@ namespace LAPS_WebUI
                 ClipboardJS.AppendTo(thisDocument.Head);
                 FontAwesome.AppendTo(thisDocument.Head);
 
-                thisDocument.Head.AppendChild(new Script { Src = "/ressources/js/helper.js", Defer = true });
+                thisDocument.Head.AppendChild(new Script { Src = "/resources/js/helper.js", Defer = true });
 
                 var builder = new LaraBuilder(thisDocument.Body);
 
