@@ -20,12 +20,14 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: docker/build-push-action@v1
+      - name: Docker Publish
+        uses: manusa/actions-publish-docker@v1.1.0
         with:
+          # Name of the Docker image
+          name: laps-webui
+          # Username for Docker registry
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: seji64/laps-webui
-          dockerfile: ./Dockerfile
-          tag_with_ref: true
+          # Password for Docker registry
+          password: ${{ secrets.DOCKER_PASSWORD }} 
 
 
