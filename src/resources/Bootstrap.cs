@@ -1,6 +1,6 @@
 ﻿using Integrative.Lara;
 
-namespace LAPS_WebUI.Ressources
+namespace LAPS_WebUI.resources
 {
     internal static class Bootstrap
     {
@@ -9,16 +9,16 @@ namespace LAPS_WebUI.Ressources
             head.AppendChild(new Link
             {
                 Rel = "stylesheet",
-                HRef = "/ressources/bootstrap/css/bootstrap.min.css"
+                HRef = "/resources/bootstrap/css/bootstrap.min.css"
             });
             head.AppendChild(new Script
             {
-                Src = "/ressources/bootstrap/js/popper.min.js",
+                Src = "/resources/bootstrap/js/popper.min.js",
                 Defer = true
             });
             head.AppendChild(new Script
             {
-                Src = "/ressources/bootstrap/js/bootstrap.min.js",
+                Src = "/resources/bootstrap/js/bootstrap.min.js",
                 Defer = true
             });
 

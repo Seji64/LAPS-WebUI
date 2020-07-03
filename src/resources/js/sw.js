@@ -2,14 +2,14 @@
 const assets = [
     '/',
     '/laps',
-    '/ressources/js/helper.js',
-    '/ressources/images/*.png',
-    '/ressources/bootstrap/css/bootstrap.min.css',
-    '/ressources/bootstrap/js/popper.min.js',
-    '/ressources/bootstrap/js/bootstrap.min.js',
-    '/ressources/clipboardjs/js/clipboard.min.js',
-    '/ressources/fontawesome/css/all.min.css',
-    '/ressources/fontawesome/webfonts/*.(svg|ttf|woff|woff2)',
+    '/resources/js/helper.js',
+    '/resources/images/*.png',
+    '/resources/bootstrap/css/bootstrap.min.css',
+    '/resources/bootstrap/js/popper.min.js',
+    '/resources/bootstrap/js/bootstrap.min.js',
+    '/resources/clipboardjs/js/clipboard.min.js',
+    '/resources/fontawesome/css/all.min.css',
+    '/resources/fontawesome/webfonts/*.(svg|ttf|woff|woff2)',
 ];// install event
 self.addEventListener('install', evt => {
     evt.waitUntil(

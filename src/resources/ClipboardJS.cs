@@ -1,5 +1,5 @@
 ﻿using Integrative.Lara;
-namespace LAPS_WebUI.Ressources
+namespace LAPS_WebUI.resources
 {
     internal static class ClipboardJS
     {
@@ -7,7 +7,7 @@ namespace LAPS_WebUI.Ressources
         {
             head.AppendChild(new Script
             {
-                Src = "/ressources/clipboardjs/js/clipboard.min.js",
+                Src = "/resources/clipboardjs/js/clipboard.min.js",
                 Defer = true
             });
         }

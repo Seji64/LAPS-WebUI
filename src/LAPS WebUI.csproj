@@ -21,97 +21,97 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ressources\bootstrap\css\bootstrap.min.css">
+    <None Update="resources\bootstrap\css\bootstrap.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\bootstrap\js\bootstrap.min.js">
+    <None Update="resources\bootstrap\js\bootstrap.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\bootstrap\js\popper.min.js">
+    <None Update="resources\bootstrap\js\popper.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\clipboardjs\js\clipboard.min.js">
+    <None Update="resources\clipboardjs\js\clipboard.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\css\all.css">
+    <None Update="resources\fontawesome\css\all.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\css\all.min.css">
+    <None Update="resources\fontawesome\css\all.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-brands-400.svg">
+    <None Update="resources\fontawesome\webfonts\fa-brands-400.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-brands-400.ttf">
+    <None Update="resources\fontawesome\webfonts\fa-brands-400.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-brands-400.woff">
+    <None Update="resources\fontawesome\webfonts\fa-brands-400.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-brands-400.woff2">
+    <None Update="resources\fontawesome\webfonts\fa-brands-400.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-regular-400.svg">
+    <None Update="resources\fontawesome\webfonts\fa-regular-400.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-regular-400.ttf">
+    <None Update="resources\fontawesome\webfonts\fa-regular-400.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-regular-400.woff">
+    <None Update="resources\fontawesome\webfonts\fa-regular-400.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-regular-400.woff2">
+    <None Update="resources\fontawesome\webfonts\fa-regular-400.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-solid-900.svg">
+    <None Update="resources\fontawesome\webfonts\fa-solid-900.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-solid-900.ttf">
+    <None Update="resources\fontawesome\webfonts\fa-solid-900.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-solid-900.woff">
+    <None Update="resources\fontawesome\webfonts\fa-solid-900.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\fontawesome\webfonts\fa-solid-900.woff2">
+    <None Update="resources\fontawesome\webfonts\fa-solid-900.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\images\logo-128x128.png">
+    <None Update="resources\images\logo-128x128.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\images\logo-192x192.png">
+    <None Update="resources\images\logo-192x192.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\images\logo-512x512.png">
+    <None Update="resources\images\logo-512x512.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\images\logo-72x72.png">
+    <None Update="resources\images\logo-72x72.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\images\logo-96x96.png">
+    <None Update="resources\images\logo-96x96.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\js\app.js">
+    <None Update="resources\js\app.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\js\helper.js">
+    <None Update="resources\js\helper.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\js\sw.js">
+    <None Update="resources\js\sw.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\manifest.json">
+    <None Update="resources\manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\select2\css\select2-bootstrap4.css">
+    <None Update="resources\select2\css\select2-bootstrap4.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\select2\css\select2.min.css">
+    <None Update="resources\select2\css\select2.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ressources\select2\js\select2.min.js">
+    <None Update="resources\select2\js\select2.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

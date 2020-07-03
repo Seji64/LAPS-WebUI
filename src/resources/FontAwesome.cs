@@ -1,7 +1,7 @@
 ﻿using Integrative.Lara;
 
 
-namespace LAPS_WebUI.Ressources
+namespace LAPS_WebUI.resources
 {
     internal static class FontAwesome
     {
@@ -10,7 +10,7 @@ namespace LAPS_WebUI.Ressources
             head.AppendChild(new Link
             {
                 Rel = "stylesheet",
-                HRef = "/ressources/fontawesome/css/all.min.css"
+                HRef = "/resources/fontawesome/css/all.min.css"
             });
         }
     }

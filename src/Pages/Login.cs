@@ -3,7 +3,7 @@ using LAPS_WebUI.PageData;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using LAPS_WebUI.Ressources;
+using LAPS_WebUI.resources;
 using Logger = NLog.Logger;
 using LdapForNet;
 
@@ -22,9 +22,9 @@ namespace LAPS_WebUI.Pages
 
             #region "PWA"
 
-            thisDocument.Head.AppendChild(new Script { Src = "/ressources/js/app.js", Defer = true });
-            thisDocument.Head.AppendChild(new Link { Rel = "manifest", HRef = "/ressources/manifest.json" });
-            thisDocument.Head.AppendChild(new Link { Rel = "apple-touch-icon", HRef = "/ressources/images/logo-96x96.png" });
+            thisDocument.Head.AppendChild(new Script { Src = "/resources/js/app.js", Defer = true });
+            thisDocument.Head.AppendChild(new Link { Rel = "manifest", HRef = "/resources/manifest.json" });
+            thisDocument.Head.AppendChild(new Link { Rel = "apple-touch-icon", HRef = "/resources/images/logo-96x96.png" });
             thisDocument.Head.AppendChild(new Meta { Name = "theme-color", Content = "#848482" });
 
             #endregion

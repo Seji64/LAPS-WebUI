@@ -1,6 +1,6 @@
 ﻿using Integrative.Lara;
 
-namespace LAPS_WebUI.Ressources
+namespace LAPS_WebUI.resources
 {
     internal static class Select2
     {
@@ -8,19 +8,19 @@ namespace LAPS_WebUI.Ressources
         {
             head.AppendChild(new Script
             {
-                Src = "/ressources/select2/js/select2.min.js",
+                Src = "/resources/select2/js/select2.min.js",
                 Defer = true
             });
             head.AppendChild(new Link
             {
                 Rel = "stylesheet",
-                HRef = "/ressources/select2/css/select2.min.css"
+                HRef = "/resources/select2/css/select2.min.css"
             });
 
             head.AppendChild(new Link
             {
                 Rel = "stylesheet",
-                HRef = "/ressources/select2/css/select2-bootstrap4.css"
+                HRef = "/resources/select2/css/select2-bootstrap4.css"
             });
         }
     }
