@@ -141,6 +141,10 @@ namespace LAPS_WebUI
         private Task select2SelectedHandler(MessageEventArgs arg)
         {
 
+            Logger m_log = LogManager.GetLogger("select2SelectedHandler");
+
+            m_log.Debug("Selection changed => {0}", arg.ToString());
+
             var rawdata = Newtonsoft.Json.Linq.JObject.Parse(arg.Body)["data"].ToString();
             var selectedComputername = Newtonsoft.Json.Linq.JObject.Parse(rawdata)["text"].ToString();
 

@@ -1,17 +1,11 @@
-﻿using Microsoft.AspNetCore.Server.IIS.Core;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-
-namespace LAPS_WebUI
+﻿namespace LAPS_WebUI
 {
 
     public class LDAP
     {
         public string Server { get; set; }
-        public int Port { get; set; }
-        public bool UseSSL { get; set; }
+        public int Port { get; set; } = 389;
+        public bool UseSSL { get; set; } = false;
         public string SearchBase { get; set; }
     }
 

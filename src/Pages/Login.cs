@@ -135,20 +135,17 @@ namespace LAPS_WebUI.Pages
                     throw new Exception("Empty fileds");
                 }
 
+                m_log.Debug("Connecting to {0}:{1} | SSL:{2}", Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL);
+
                 ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
 
-                m_log.Info("Connection ok");
+                m_log.Debug("Connection successful");
+
+                m_log.Debug("Trying bind with user {0}",m_logindata.Username);
 
                 ldapConnection.Bind(LdapForNet.Native.Native.LdapAuthMechanism.SIMPLE,m_logindata.Username, m_logindata.Password);
 
-                m_log.Info("bind ok");
-
-                //var test = ldapConnection.GetRootDse();
-
-                //if (test is null)
-                //{
-                //    throw new Exception("LDAP Connection failed!");
-                //}
+                m_log.Debug("Bind successful");
 
                 authResult = true;
 
@@ -160,6 +157,7 @@ namespace LAPS_WebUI.Pages
             }
             catch (Exception ex)
             {
+                m_log.Debug("Bind or LDAP Connection failed for User {0}", m_logindata.Username);
                 loginMessage.InnerText = "Login failed";
                 loginMessage.SetFlagAttribute("hidden", false);
                 m_log.Error(ex.Message);

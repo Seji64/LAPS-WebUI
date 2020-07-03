@@ -24,18 +24,19 @@ namespace LAPS_WebUI
             try
             {
 
-                if (!File.Exists(System.IO.Path.Combine(currentDir, "settings.json"))){
-                    throw new FileNotFoundException("settings.json not found!");
-                }
-
                 var configBuilder = new ConfigurationBuilder()
                     .SetBasePath(currentDir)
-                    .AddJsonFile("settings.json", true)
-                    .AddEnvironmentVariables();
+                    .AddJsonFile("settings.json", true, false)
+                    .AddEnvironmentVariables(prefix: "LAPS_");
 
                 IConfigurationRoot configuration = configBuilder.Build();
                 var settings = new Settings();
                 configuration.Bind(settings);
+
+                if (settings.LDAP is null || string.IsNullOrWhiteSpace(settings.LDAP.Server))
+                {
+                    throw new Exception("LDAP Server cannot be empty or null!");
+                }
 
                 await app.Start(new StartServerOptions
                 {
@@ -124,6 +125,8 @@ namespace LAPS_WebUI
 
                 m_log.Info("LAPS WEB UI is up and running!");
                 m_log.Info("Web Server is listening on {0}:{1}", settings.ListenAddress, settings.ListenPort);
+
+                m_log.Info("Configured LDAP Server: {0} | LDAP Port: {1} | SSL: {2} | SearchBase: {3}", settings.LDAP.Server, settings.LDAP.Port, settings.LDAP.UseSSL, string.IsNullOrWhiteSpace(settings.LDAP.SearchBase) ? "default" : settings.LDAP.SearchBase);
 
                 await app.WaitForShutdown();
 
