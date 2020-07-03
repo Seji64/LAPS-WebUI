@@ -130,7 +130,7 @@ namespace LAPS_WebUI
             LaraUI.Page.JSBridge.Submit("$('[data-toggle=\"tooltip\"]').tooltip();");
             LaraUI.Page.JSBridge.Submit(@"var clipboard = new ClipboardJS('.clipboard-btn'); clipboard.on('success', function(e) { setTooltip(e.trigger, 'Copied!'); hideTooltip(e.trigger); }); clipboard.on('error', function(e) { setTooltip(e.trigger, 'Copied!'); hideTooltip(e.trigger); });");
             LaraUI.Page.JSBridge.Submit(@"$('.clipboard-btn').tooltip({ trigger:'click', placement:'bottom' });");
-            LaraUI.Page.JSBridge.Submit(@"$('.mysearchbox').select2({ minimumInputLength: 4,placeholder: 'Computernamen eingeben', allowClear: true, theme: 'bootstrap4', ajax: { url: '/search' , dataType: 'json'} });");
+            LaraUI.Page.JSBridge.Submit(@"$('.mysearchbox').select2({ minimumInputLength: 4,placeholder: 'Enter computer name', allowClear: true, theme: 'bootstrap4', ajax: { url: '/search' , dataType: 'json'} });");
             LaraUI.Page.JSBridge.Submit(@"var $eventSelect = $('.mysearchbox'); $eventSelect.on('select2:select', function (e) { LaraSelectedEventProxy('select2Selected', e); });");
             LaraUI.Page.JSBridge.AddMessageListener("select2Selected", select2SelectedHandler);
 
