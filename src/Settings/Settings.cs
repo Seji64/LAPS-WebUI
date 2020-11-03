@@ -6,6 +6,7 @@
         public string Server { get; set; }
         public int Port { get; set; } = 389;
         public bool UseSSL { get; set; } = false;
+        public bool TrustAllCertificates { get; set; } = false;
         public string SearchBase { get; set; }
     }
 

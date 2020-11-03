@@ -87,6 +87,9 @@ namespace LAPS_WebUI.WebServices
                 using (var ldapConnection = new LdapConnection())
                 {
                     ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
+
+                    if (Settings.ThisInstance.LDAP.TrustAllCertificates) { ldapConnection.TrustAllCertificates(); }
+
                     ldapConnection.Bind(Native.LdapAuthMechanism.SIMPLE, UserSession.loginData.Username, UserSession.loginData.Password);
 
                     string defaultNamingContext = string.Empty;
