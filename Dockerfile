@@ -11,7 +11,7 @@ FROM base AS final
 WORKDIR /app
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt-get install -y ldap-utils sasl2-bin libsasl2-2 libsasl2-modules libsasl2-modules-ldap openssl
+RUN apt-get install -y ldap-utils slapd sasl2-bin ca-certificates libsasl2-2 curl libsasl2-modules libsasl2-modules-db libsasl2-modules-gssapi-mit libsasl2-modules-ldap libsasl2-modules-otp libsasl2-modules-sql openssl lapd krb5-kdc-ldap
 COPY --from=build publish/laps-webui .
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "LAPS WebUI.dll"]
