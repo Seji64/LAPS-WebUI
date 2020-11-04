@@ -38,6 +38,12 @@ namespace LAPS_WebUI
                     throw new Exception("LDAP Server cannot be empty or null!");
                 }
 
+                if (settings.LDAP is null || string.IsNullOrWhiteSpace(settings.LDAP.SearchBase))
+                {
+                    throw new Exception("SearchBase cannot be empty or null!");
+                }
+
+
                 await app.Start(new StartServerOptions
                 {
                     Mode = ApplicationMode.Default,
@@ -126,7 +132,7 @@ namespace LAPS_WebUI
                 m_log.Info("LAPS WEB UI is up and running!");
                 m_log.Info("Web Server is listening on {0}:{1}", settings.ListenAddress, settings.ListenPort);
 
-                m_log.Info("Configured LDAP Server: {0} | LDAP Port: {1} | SSL: {2} | SearchBase: {3}", settings.LDAP.Server, settings.LDAP.Port, settings.LDAP.UseSSL, string.IsNullOrWhiteSpace(settings.LDAP.SearchBase) ? "default" : settings.LDAP.SearchBase);
+                m_log.Info("Configured LDAP Server: {0} | LDAP Port: {1} | SSL: {2} | SearchBase: {3} | Trust all Certificates: {4}", settings.LDAP.Server, settings.LDAP.Port, settings.LDAP.UseSSL, string.IsNullOrWhiteSpace(settings.LDAP.SearchBase) ? "default" : settings.LDAP.SearchBase,settings.LDAP.TrustAllCertificates);
 
                 await app.WaitForShutdown();
 

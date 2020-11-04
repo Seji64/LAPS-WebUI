@@ -86,22 +86,19 @@ namespace LAPS_WebUI.WebServices
 
                 using (var ldapConnection = new LdapConnection())
                 {
+
                     ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
 
-                    if (Settings.ThisInstance.LDAP.TrustAllCertificates) { ldapConnection.TrustAllCertificates(); }
+                    if (Settings.ThisInstance.LDAP.TrustAllCertificates) { m_log.Debug("Trusting all certificates"); ldapConnection.TrustAllCertificates(); }
+
+                    //Linux/Docker compat
+                    ldapConnection.SetOption(Native.LdapOption.LDAP_OPT_REFERRALS, IntPtr.Zero);
 
                     ldapConnection.Bind(Native.LdapAuthMechanism.SIMPLE, UserSession.loginData.Username, UserSession.loginData.Password);
 
                     string defaultNamingContext = string.Empty;
 
-                    if (string.IsNullOrWhiteSpace(Settings.ThisInstance.LDAP.SearchBase))
-                    {
-                        defaultNamingContext = ldapConnection.GetRootDse().Attributes["defaultNamingContext"].First().ToString();
-                    }
-                    else
-                    {
-                        defaultNamingContext = Settings.ThisInstance.LDAP.SearchBase;
-                    }
+                    defaultNamingContext = Settings.ThisInstance.LDAP.SearchBase;
 
                     var ldapSearchResults = ldapConnection.Search(defaultNamingContext, filter, PropertiesToLoad, Native.LdapSearchScope.LDAP_SCOPE_SUB);
 
@@ -109,7 +106,7 @@ namespace LAPS_WebUI.WebServices
                     {
                         try
                         {
-                            searchResult.Add(new ADComputer(ldapSearchResult.Attributes["cn"].First().ToString()));
+                            searchResult.Add(new ADComputer(ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First()));
                         }
                         catch (Exception ex)
                         {

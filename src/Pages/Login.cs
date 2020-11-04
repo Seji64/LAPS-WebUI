@@ -139,6 +139,8 @@ namespace LAPS_WebUI.Pages
 
                 ldapConnection.Connect(Settings.ThisInstance.LDAP.Server, Settings.ThisInstance.LDAP.Port, Settings.ThisInstance.LDAP.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
 
+                if (Settings.ThisInstance.LDAP.TrustAllCertificates) { m_log.Debug("Trusting all certificates"); ldapConnection.TrustAllCertificates(); }
+
                 m_log.Debug("Connection successful");
 
                 m_log.Debug("Trying bind with user {0}",m_logindata.Username);
