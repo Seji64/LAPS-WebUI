@@ -1,0 +1,27 @@
+﻿@page "/logout"
+@inject ISessionManagerService sessionManager
+@inject NavigationManager NavigationManager
+
+
+<div class="row mt-5" role="status">
+    <div class="col-md-8 offset-md-2">
+        <h3 class="text-center">
+            <span class="spinner-grow text-center text-primary" />
+            Logging you out...
+        </h3>
+    </div>
+
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (await sessionManager.IsUserLoggedInAsync())
+        {
+            await sessionManager.LogoutAsync();
+        }
+
+        await Task.Delay(1000);
+        NavigationManager.NavigateTo("/");
+    }
+}

@@ -1,0 +1,36 @@
+﻿@inherits LayoutComponentBase
+@inject ISessionManagerService sessionManager
+@inject NavigationManager NavigationManager
+@using LAPS_WebUI.Services;
+
+<div class="page">
+
+    <div class="main">
+        <nav class="navbar navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">LAPS WebUI</a>
+            <button class="btn btn-outline-success my-2 my-sm-2" hidden=@showLogout @onclick="Logout">
+                Logout
+            </button>
+        </nav>
+
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+@code{
+
+    public bool showLogout { get; set; }
+
+    private void Logout()
+    {
+        NavigationManager.NavigateTo("/logout");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        showLogout = !(await sessionManager.IsUserLoggedInAsync());
+        StateHasChanged();
+    }
+}
