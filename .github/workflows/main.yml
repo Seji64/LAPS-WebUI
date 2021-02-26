@@ -28,7 +28,7 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }} # Provide GITHUB_TOKEN to login into the GitHub Packages
         image-name: LAPS-WebUI # Provide only Docker image name, tag will be automatically set to latest
-        dockerfile: Dockerfile
+        dockerfile: src/Dockerfile
         extract-git-tag: true
         build-context: ./src
         
@@ -68,7 +68,7 @@ jobs:
           tag=$(git describe --tags --abbrev=0)
           release_name="LAPS-WebUI-$tag-${{ matrix.target }}"
           # Build everything
-          dotnet publish src/LAPS-WebUI.csproj --self-contained --framework netcoreapp5.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish src/LAPS-WebUI.csproj --self-contained --framework net5.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
