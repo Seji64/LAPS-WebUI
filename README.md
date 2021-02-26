@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/seji64/laps-webui/badge)](https://www.codefactor.io/repository/github/seji64/laps-webui)
+
 # LAPS-WebUI
 A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 
