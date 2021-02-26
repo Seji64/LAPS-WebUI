@@ -25,7 +25,7 @@ docker run -d \
   -e LDAP__SearchBase=DC=example,DC=com \
   -p 8080:8080 \
   --restart unless-stopped \
-  docker.pkg.github.com/Seji64/LAPS-WebUI/LAPS-WebUI
+  docker.pkg.github.com/seji64/laps-webui/laps-webui
 ```
 
 ## Usage:
