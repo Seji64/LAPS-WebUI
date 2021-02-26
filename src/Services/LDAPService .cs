@@ -13,7 +13,7 @@ namespace LAPS_WebUI.Services
     public class LDAPService : ILDAPService
     {
         private readonly ILogger<LDAPService> _logger;
-        private IOptions<LDAPOptions> _ldapOptions;
+        private readonly IOptions<LDAPOptions> _ldapOptions;
         public LDAPService(ILogger<LDAPService> logger, IOptions<LDAPOptions> ldapoptions)
         {
             _logger = logger;

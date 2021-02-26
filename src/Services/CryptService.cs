@@ -31,15 +31,13 @@ namespace LAPS_WebUI.Services
                 aes.IV = key.GetBytes(aes.BlockSize / 8);
                 aes.Mode = CipherMode.CBC;
 
-                using (MemoryStream ms = new MemoryStream())
+                using MemoryStream ms = new MemoryStream();
+                using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(clearBytes, 0, clearBytes.Length);
-                        cs.FlushFinalBlock();
-                    }
-                    encryptedBytes = ms.ToArray();
+                    cs.Write(clearBytes, 0, clearBytes.Length);
+                    cs.FlushFinalBlock();
                 }
+                encryptedBytes = ms.ToArray();
             }
             return encryptedBytes;
         }
@@ -59,16 +57,14 @@ namespace LAPS_WebUI.Services
                 aes.IV = key.GetBytes(aes.BlockSize / 8);
                 aes.Mode = CipherMode.CBC;
 
-                using (MemoryStream ms = new MemoryStream())
+                using MemoryStream ms = new MemoryStream();
+                using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(cryptBytes, 0, cryptBytes.Length);
-                        cs.FlushFinalBlock();
-                    }
-
-                    clearBytes = ms.ToArray();
+                    cs.Write(cryptBytes, 0, cryptBytes.Length);
+                    cs.FlushFinalBlock();
                 }
+
+                clearBytes = ms.ToArray();
             }
             return clearBytes;
         }

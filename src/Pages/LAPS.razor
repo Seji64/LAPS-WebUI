@@ -2,41 +2,31 @@
 @inject ISessionManagerService sessionManager
 @inject NavigationManager NavigationManager
 @inject ILDAPService LDAPService
+@inject IJSRuntime JSRuntime
 
 @if (authOK)
 {
 <div class="container mt-5">
 
-    @*<div class="input-group">
+    <Select2 TItem="ADComputer"
+             TSource="ADComputer[]"
+             IdSelector="i => i.Name"
+             TextSelector="i => i.Name.ToString()"
+             Datasource="DataSource"
+             Value="SelectedItems"
+             GetElementById="(items, filter, token) => Task.FromResult(items.SingleOrDefault(i => i.Name.Equals(filter)))"
+             FilterFunction="SearchAsync"
+             OnValueChanged="SelectedComputerChanged"
+             Multiselect="false"
+             OptionLayout="@(p => (MarkupString)$"<i class='fas fa-desktop'></i> {p.Name}")"
+             Select2Options="InputSelect2Options">
 
-        <div class="input-group-prepend">
-            <span class="input-group-text">
-                <i class="fa fa-search" aria-hidden="true" />
-            </span>
-        </div>*@
+    </Select2>
 
-        <Select2 TItem="ADComputer"
-                 TSource="ADComputer[]"
-                 IdSelector="i => i.Name"
-                 TextSelector="i => i.Name.ToString()"
-                 Datasource="ADComputers"
-                 Value="SelectedADComputers"
-                 GetElementById="(items, filter, token) => Task.FromResult(items.SingleOrDefault(i => i.Name.Equals(filter)))"
-                 FilterFunction="SearchAsync"
-                 OnValueChanged="SelectedComputerChanged"
-                 Multiselect="false"
-                 OptionLayout="@(p => (MarkupString)$"<i class='fas fa-desktop'></i> {p.Name}")"
-                 Select2Options="InputSelect2Options">
-                 
-        </Select2>
-
-    @*</div>*@
-
-    @if (SelectedADComputer != null && string.IsNullOrEmpty(SelectedADComputer.Name) == false)
+    @foreach (ADComputer item in SelectedItems)
     {
-
         <div class="card mt-5">
-            <h5 class="card-header" id="cardHeader">@SelectedADComputer.Name</h5>
+            <h5 class="card-header" id="cardHeader">@item.Name</h5>
 
             <div class="card-body">
 
@@ -49,7 +39,7 @@
                     </div>
 
                     <pre class="form-control" id="lapspw">
-                    <code>@SelectedADComputer.LAPSPassword</code>
+                    <code>@item.LAPSPassword</code>
                     </pre>
 
                     <button class="btn btn-light clipboard-btn" id="clipboard-btn" data-clipboard-target="#lapspw">
@@ -67,7 +57,7 @@
                     </div>
 
                     <pre class="form-control" id="lapspwexpiredate">
-                    <code>@SelectedADComputer.LAPSPasswordExpireDate.ToString()</code>
+                    <code>@item.LAPSPasswordExpireDate.ToString()</code>
                     </pre>
 
                 </div>
@@ -93,11 +83,9 @@
 
     private bool authOK { get; set; }
 
-    private List<ADComputer> SelectedADComputers { get; set; } = new List<ADComputer>();
+    private List<ADComputer> SelectedItems { get; set; } = new List<ADComputer>();
 
-    private ADComputer SelectedADComputer { get; set; }
-
-    private ADComputer[] ADComputers { get; set; } = new List<ADComputer>().ToArray();
+    private ADComputer[] DataSource { get; set; } = new List<ADComputer>().ToArray();
 
     private string ErrorMessage { get; set; } = String.Empty;
 
@@ -105,18 +93,25 @@
 
     private async Task SelectedComputerChanged()
     {
-        var name = SelectedADComputers.Count > 0 ? SelectedADComputers.First().Name : null;
 
-        if (!String.IsNullOrWhiteSpace(name))
+        ErrorMessage = String.Empty;
+
+        try
         {
-            try
+            foreach (var item in SelectedItems)
             {
-                SelectedADComputer = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), name);
+                if (item != null)
+                {
+                    var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), item.Name);
+                    item.LAPSPassword = tmp.LAPSPassword;
+                    item.LAPSPasswordExpireDate = tmp.LAPSPasswordExpireDate;
+                }
+
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
         }
 
         StateHasChanged();
@@ -124,7 +119,7 @@
 
     private async Task<List<ADComputer>> SearchAsync(ADComputer[] allItems, string filter, System.Threading.CancellationToken token)
     {
-        ADComputers = (await LDAPService.SearchADComputersAsync(await sessionManager.GetLdapCredentialsAsync(), filter)).ToArray();
+        DataSource = (await LDAPService.SearchADComputersAsync(await sessionManager.GetLdapCredentialsAsync(), filter)).ToArray();
 
         return await LDAPService.SearchADComputersAsync(await sessionManager.GetLdapCredentialsAsync(), filter);
     }
@@ -141,6 +136,10 @@
             InputSelect2Options.MinimumInputLength = 4;
             InputSelect2Options.Placeholder = "Search by Computername";
             InputSelect2Options.Theme = "bootstrap4";
+            InputSelect2Options.Multiple = false;
+            InputSelect2Options.CloseOnSelect = true;
+
+            await JSRuntime.InvokeVoidAsync("initClipboardJS");
         }
 
         StateHasChanged();

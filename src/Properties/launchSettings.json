@@ -19,9 +19,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "LDAP__Server": "lol.lol.com",
-        "ASPNETCORE_Kestrel__EndPoints__Http__Url": "http://localhost:5555"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": "true",
       "applicationUrl": "http://localhost:5000"

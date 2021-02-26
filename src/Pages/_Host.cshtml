@@ -9,14 +9,24 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,  maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#03173d" />
     <title>LAPS-WebUI</title>
     <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="LAPS-WebUI.styles.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/bootstrap-v4-rtl/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/font-awesome/css/all.min.css">
+
+    <link href="_content/Blazorise/blazorise.css" rel="stylesheet" />
+    <link href="_content/Blazorise.Bootstrap/blazorise.bootstrap.css" rel="stylesheet" />
+
     <link rel="stylesheet" href="~/select2-theme/select2-bootstrap4.min.css">
+    <link href="_content/KeudellCoding.Blazor.AdvancedBlazorSelect2/lib/select2/css/select2.min.css" rel="stylesheet" />
+
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
 
 </head>
 <body>
@@ -34,9 +44,22 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
-    <script src="~/jquery/jquery.min.js"></script>
+
+    <script src="~/clipboard.js/clipboard.min.js" type="text/javascript" language="javascript"></script>
+
+    <script src="~/jquery/jquery.min.js" type="text/javascript" language="javascript"></script>
+    <script src="~/popper.js/umd/popper.min.js" type="text/javascript" language="javascript"></script>
+    <script src="~/bootstrap-v4-rtl/js/bootstrap.min.js" type="text/javascript" language="javascript"></script>
+
+    <script src="_content/Blazorise/blazorise.js"></script>
+    <script src="_content/Blazorise.Bootstrap/blazorise.bootstrap.js"></script>
+
     <script src="_content/KeudellCoding.Blazor.AdvancedBlazorSelect2/Select2JsInterop.js" type="text/javascript" language="javascript"></script>
     <script src="_content/KeudellCoding.Blazor.AdvancedBlazorSelect2/lib/select2/js/select2.full.min.js" type="text/javascript" language="javascript"></script>
-    <link href="_content/KeudellCoding.Blazor.AdvancedBlazorSelect2/lib/select2/css/select2.min.css" rel="stylesheet" />
+
+    <script src="~/custom/js/custom.js" type="text/javascript" language="javascript"></script>
+
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+
 </body>
 </html>
