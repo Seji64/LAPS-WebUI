@@ -28,8 +28,10 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }} # Provide GITHUB_TOKEN to login into the GitHub Packages
         image-name: LAPS-WebUI # Provide only Docker image name, tag will be automatically set to latest
-        dockerfile: src/Dockerfile
+        dockerfile: Dockerfile
         extract-git-tag: true
+        build-context: ./src
+        
   release:
     name: Release
     strategy:
@@ -56,9 +58,9 @@ jobs:
           git describe --tags --abbrev=0
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1.7.2
+        uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0
+          dotnet-version: 5.0.x
 
       - name: Build
         shell: bash
