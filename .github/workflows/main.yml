@@ -24,7 +24,7 @@ jobs:
           git describe --tags --abbrev=0
 
     - name: GHCR Build and push Docker image
-      uses: pmorelli92/github-container-registry-build-push@latest
+      uses: pmorelli92/github-container-registry-build-push@1.0.2
       with:
         # Token that has `write:packages` scope to authenticate against GCHR.
         personal-access-token: ${{ secrets.GHCR_PAT }}
