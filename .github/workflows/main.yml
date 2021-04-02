@@ -23,15 +23,19 @@ jobs:
           git tag --list
           git describe --tags --abbrev=0
 
-    - name: Build and Publish latest Docker image
-      uses: VaultVulp/gp-docker-action@1.1.7
+    - name: GHCR Build and push Docker image
+      uses: pmorelli92/github-container-registry-build-push@latest
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }} # Provide GITHUB_TOKEN to login into the GitHub Packages
-        image-name: LAPS-WebUI # Provide only Docker image name, tag will be automatically set to latest
-        dockerfile: src/Dockerfile
-        extract-git-tag: true
-        build-context: ./src
-        
+        # Token that has `write:packages` scope to authenticate against GCHR.
+        personal-access-token: ${{ secrets.GHCR_PAT }}
+        # Docker Image name
+        docker-image-name: LAPS-WebUI
+        # Docker Image tag
+        docker-image-tag: latest
+        # Dockerfile path and name
+        dockerfile-path: src/Dockerfile
+        # Path to the build context
+        build-context: ./src        
   release:
     name: Release
     strategy:
