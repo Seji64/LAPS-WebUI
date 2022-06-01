@@ -10,32 +10,7 @@ on:
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # This workflow contains a single job called "build"
-  docker:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2 # Checking out the repo
-      with:
-        fetch-depth: 0
-    - run: |
-          git tag --list
-          git describe --tags --abbrev=0
-
-    - name: GHCR Build and push Docker image
-      uses: pmorelli92/github-container-registry-build-push@1.0.2
-      with:
-        # Token that has `write:packages` scope to authenticate against GCHR.
-        personal-access-token: ${{ secrets.GHCR_PAT }}
-        # Docker Image name
-        docker-image-name: LAPS-WebUI
-        # Docker Image tag
-        docker-image-tag: latest
-        # Dockerfile path and name
-        dockerfile-path: src/Dockerfile
-        # Path to the build context
-        build-context: ./src        
+jobs:      
   release:
     name: Release
     strategy:
@@ -62,9 +37,10 @@ jobs:
           git describe --tags --abbrev=0
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: '6.0.x'
+          include-prerelease: true
 
       - name: Build
         shell: bash
