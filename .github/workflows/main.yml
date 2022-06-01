@@ -40,7 +40,6 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0.x'
-          include-prerelease: true
 
       - name: Build
         shell: bash
@@ -48,7 +47,7 @@ jobs:
           tag=$(git describe --tags --abbrev=0)
           release_name="LAPS-WebUI-$tag-${{ matrix.target }}"
           # Build everything
-          dotnet publish src/LAPS-WebUI.csproj --self-contained --framework net5.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish src/LAPS-WebUI.csproj --self-contained --framework net6.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
