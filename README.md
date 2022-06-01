@@ -1,12 +1,10 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/seji64/laps-webui/badge)](https://www.codefactor.io/repository/github/seji64/laps-webui)
-
 # LAPS-WebUI
 A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 
 ## Setup Preqesites
 
 - A working Active Directory with Microsoft LAPS installed
-- .NET Core 5.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
+- .NET Core 6.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
 
 ## Setup (bare metal):
 
@@ -27,7 +25,7 @@ docker run -d \
   -e LDAP__SearchBase=DC=example,DC=com \
   -p 8080:8080 \
   --restart unless-stopped \
-  ghcr.io/seji64/laps-webui:latest
+  docker.pkg.github.com/Seji64/LAPS-WebUI/LAPS-WebUI
 ```
 
 ## Usage:
@@ -44,5 +42,3 @@ There is none cause *LAPS-WebUI* authenticates against your ActiveDirectory. The
 ![Screenshot](https://raw.githubusercontent.com/Seji64/LAPS-WebUI/master/screenshots/screenshot01.png)
 
 ![Screenshot](https://raw.githubusercontent.com/Seji64/LAPS-WebUI/master/screenshots/screenshot02.png)
-
-![Screenshot](https://raw.githubusercontent.com/Seji64/LAPS-WebUI/master/screenshots/screenshot03.png)
