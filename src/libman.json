@@ -1,53 +1,23 @@
 {
   "version": "1.0",
-  "defaultProvider": "cdnjs",
+  "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "jquery@3.5.1",
-      "destination": "wwwroot/jquery/"
+      "library": "roboto-fontface-material@0.1.0",
+      "destination": "wwwroot/roboto-fontface-material/"
     },
     {
-      "library": "clipboard.js@2.0.6",
-      "destination": "wwwroot/clipboard.js/"
-    },
-    {
-      "library": "bootstrap-v4-rtl@4.6.0-1",
-      "destination": "wwwroot/bootstrap-v4-rtl/",
+      "library": "material-design-icons-iconfont@6.1.0",
+      "destination": "wwwroot/material-design-icons-iconfont/",
       "files": [
-        "js/bootstrap.min.js",
-        "js/bootstrap.min.js.map",
-        "css/bootstrap.min.css",
-        "css/bootstrap.min.css.map"
-      ]
-    },
-    {
-      "library": "font-awesome@5.15.2",
-      "destination": "wwwroot/font-awesome/",
-      "files": [
-        "css/all.min.css",
-        "webfonts/fa-brands-400.eot",
-        "webfonts/fa-brands-400.svg",
-        "webfonts/fa-brands-400.ttf",
-        "webfonts/fa-brands-400.woff",
-        "webfonts/fa-brands-400.woff2",
-        "webfonts/fa-regular-400.eot",
-        "webfonts/fa-regular-400.svg",
-        "webfonts/fa-regular-400.ttf",
-        "webfonts/fa-regular-400.woff",
-        "webfonts/fa-regular-400.woff2",
-        "webfonts/fa-solid-900.eot",
-        "webfonts/fa-solid-900.svg",
-        "webfonts/fa-solid-900.ttf",
-        "webfonts/fa-solid-900.woff",
-        "webfonts/fa-solid-900.woff2"
-      ]
-    },
-    {
-      "library": "popper.js@1.9.9",
-      "destination": "wwwroot/popper.js/",
-      "files": [
-        "umd/popper.min.js",
-        "umd/popper.min.js.map"
+        "dist/LICENSE",
+        "dist/material-design-icons.css",
+        "dist/material-design-icons.css.map",
+        "dist/fonts/MaterialIcons-Regular.eot",
+        "dist/fonts/MaterialIcons-Regular.json",
+        "dist/fonts/MaterialIcons-Regular.ttf",
+        "dist/fonts/MaterialIcons-Regular.woff",
+        "dist/fonts/MaterialIcons-Regular.woff2"
       ]
     }
   ]

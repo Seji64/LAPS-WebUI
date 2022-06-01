@@ -2,51 +2,51 @@
 @inject NavigationManager NavigationManager
 @inject ISessionManagerService sessionManager
 
-<div class="col-md-6 offset-md-3 mt-5">
-    <div class="card">
-        <h4 class="card-header">Login</h4>
-        <div class="card-body">
-            <EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
-                <DataAnnotationsValidator />
-                <div class="form-group">
-                    <label>Username</label>
-                    <InputText @bind-Value="user.Username" class="form-control" />
-                    <ValidationMessage For="@(() => user.Username)" />
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <InputText @bind-Value="user.Password" type="password" class="form-control" />
-                    <ValidationMessage For="@(() => user.Password)" />
-                </div>
-                <button class="btn btn-primary">
-                    @if (loading)
-                    {
-                        <span class="spinner-border spinner-border-sm mr-1"></span>
-                    }
-                    Login
-                </button>
-                @if (!string.IsNullOrEmpty(error))
-                {
-                    <div class="alert alert-danger mt-3 mb-0">@error</div>
-                }
-            </EditForm>
-        </div>
-    </div>
-</div>
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
 
+    <EditForm Model="@_loginRequest" OnValidSubmit="OnValidSubmitAsync">
+    <DataAnnotationsValidator/>
+    <MudPaper Class="pa-4">
+        <MudStack Spacing="4">
+            <MudStack>
+                <MudTextField Label="Username" Immediate="true" @bind-Value="_loginRequest.Username" For="@(() => _loginRequest.Username)" aria-label="username"/>
+                <MudTextField Label="Password" Immediate="true" Class="mt-3" @bind-Value="_loginRequest.Password" For="@(() => _loginRequest.Password)" InputType="InputType.Password" aria-label="password"/>
+            </MudStack>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="@_processing" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Login" aria-label="login">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    <MudText Class="ms-2">Processing</MudText>
+                }
+                else
+                {
+                    <MudText>Login</MudText>
+                }
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Class="mt-5" Severity="Severity.Error" Variant="Variant.Outlined">@_errorMessage</MudAlert>
+    }
+
+    </EditForm>
+
+</MudContainer>
 
 @code {
+    private UserLoginRequest _loginRequest = new UserLoginRequest();
+    private bool _processing;
+    private string _errorMessage = string.Empty;
 
-    private bool loading;
-    private string error;
-    private UserLoginRequest user = new UserLoginRequest();
-
-    private async Task HandleValidSubmit()
+    private async Task OnValidSubmitAsync(EditContext context)
     {
-        loading = true;
+        _errorMessage = string.Empty;
+        _processing = true;
         try
         {
-            if (await sessionManager.LoginAsync(user.Username, user.Password))
+            if (await sessionManager.LoginAsync(_loginRequest.Username ?? string.Empty,_loginRequest.Password ?? string.Empty))
             {
                 NavigationManager.NavigateTo("/laps");
             }
@@ -57,10 +57,13 @@
         }
         catch (Exception ex)
         {
-            error = ex.Message;
-            loading = false;
-            StateHasChanged();
+            _errorMessage = ex.Message;
         }
+        finally
+        {
+            _processing = false;
+            await InvokeAsync(StateHasChanged);
+        }      
     }
 
 }

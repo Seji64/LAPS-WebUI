@@ -1,0 +1,48 @@
+@font-face {
+  font-family: 'Roboto';
+  src:  local('Roboto Light'), 
+        local('Roboto-Light'),  
+        url(Roboto-Light.woff2) format('woff2'), 
+        url(Roboto-Light.woff) format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto-Light';
+  src:  local('Roboto Light'), 
+        local('Roboto-Light'), 
+        url(Roboto-Light.woff2) format('woff2'), 
+        url(Roboto-Light.woff) format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  src:  local('Roboto Regular'), 
+        local('Roboto-Regular'), 
+        url(Roboto-Regular.woff2) format('woff2'), 
+        url(Roboto-Regular.woff) format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto-Regular';
+  src:  local('Roboto Regular'), 
+        local('Roboto-Regular'), 
+        url(Roboto-Regular.woff2) format('woff2'), 
+        url(Roboto-Regular.woff) format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  src:  local('Roboto Medium'), 
+        local('Roboto-Medium'),
+        url(Roboto-Medium.woff2) format('woff2'), 
+        url(Roboto-Medium.woff) format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto-Medium';
+  src:  local('Roboto Medium'), 
+        local('Roboto-Medium'),
+        url(Roboto-Medium.woff2) format('woff2'), 
+        url(Roboto-Medium.woff) format('woff');
+}

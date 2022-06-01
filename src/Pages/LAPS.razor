@@ -2,152 +2,175 @@
 @inject ISessionManagerService sessionManager
 @inject NavigationManager NavigationManager
 @inject ILDAPService LDAPService
-@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject ClipboardService clipboard
+@using CurrieTechnologies.Razor.Clipboard
 
-@if (authOK)
-{
-<div class="container mt-5">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-5">
 
-    <Select2 TItem="ADComputer"
-             TSource="ADComputer[]"
-             IdSelector="i => i.Name"
-             TextSelector="i => i.Name.ToString()"
-             Datasource="DataSource"
-             Value="SelectedItems"
-             GetElementById="(items, filter, token) => Task.FromResult(items.SingleOrDefault(i => i.Name.Equals(filter)))"
-             FilterFunction="SearchAsync"
-             OnValueChanged="SelectedComputerChanged"
-             Multiselect="false"
-             OptionLayout="@(p => (MarkupString)$"<i class='fas fa-desktop'></i> {p.Name}")"
-             Select2Options="InputSelect2Options">
-
-    </Select2>
-
-    @foreach (ADComputer item in SelectedItems)
+    @if (!Authenticated)
     {
-        <div class="card mt-5">
-            <h5 class="card-header" id="cardHeader">@item.Name</h5>
+        <MudAlert Elevation="3" Severity="Severity.Error" Variant="Variant.Outlined">Access denied!</MudAlert>
+    }
+    else
+    {
+        <MudAutocomplete Label="Search by Computername" HelperTextOnFocus="true" HelperText="Minimum query length is 4. Wildcard (*) is supported"
+            MaxItems=null ValueChanged="@((ADComputer a) => OnSelectedItemChangedAsync(a))" MinCharacters="4" SearchFunc="@SearchAsync" ToStringFunc="@_ADComputerToStringConverter" Immediate="true" ResetValueOnEmptyText="true"
+            AdornmentIcon="@Icons.Material.Outlined.Search" AdornmentColor="Color.Secondary" SelectValueOnTab=true Clearable=true aria-label="Search Box">
+                <ItemTemplate Context="e">
+                    <MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Computer" Class="mb-n1 mr-3" aria-label=@($"{e.Name}")/>@($"{e.Name}")
+                    </MudText>
+                </ItemTemplate>
+                <ItemSelectedTemplate Context="e">
+                    <MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Computer" Class="mb-n1 mr-3" aria-label=@($"{e.Name}")/>@($"{e.Name}")
+                    </MudText>
+                </ItemSelectedTemplate>
+            </MudAutocomplete>
 
-            <div class="card-body">
+        <MudGrid Class="mt-8" Justify="Justify.SpaceEvenly">
 
-                <div class="input-group mb-3">
+            @foreach(var computer in SelectedComputers)
+            {
+                <MudItem xs="10" sm="6">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h5">@computer.Name</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                               <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close"/>
+                            </CardHeaderActions>       
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudField Label="Password" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password">@computer.LAPSPassword</MudField>
+                            <MudField Class="mt-6" Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date" >@computer.LAPSPasswordExpireDate</MudField>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudTooltip Text="@(IsCopyToClipboardSupported ? "Copy Password to clipboard" : "Your browser does not support Clipboard API - please use STRG+C")">
+                                <MudIconButton Disabled="@(!IsCopyToClipboardSupported)" Icon="@Icons.Material.Filled.FileCopy" Color="Color.Info" OnClick="@(async e => await CopyLAPSPasswordToClipboardAsync(computer.LAPSPassword))" aria-label="Copy Password to clipbard"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Refresh">
+                                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Tertiary" OnClick="@(async e => await RefreshComputerDetailsAsync(computer.Name))" aria-label="refresh"/>
+                            </MudTooltip>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
 
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">
-                            <i class="fa fa-key" title="LAPS Password" data-toggle="tooltip" />
-                        </span>
-                    </div>
-
-                    <pre class="form-control" id="lapspw">
-                    <code>@item.LAPSPassword</code>
-                    </pre>
-
-                    <button class="btn btn-light clipboard-btn" id="clipboard-btn" data-clipboard-target="#lapspw">
-                        <i class="fas fa-copy" />
-                    </button>
-
-                </div>
-
-                <div class="input-group mb-3">
-
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">
-                            <i class="fa fa-hourglass-end" title="LAPS Password Expire Dare" data-toggle="tooltip" />
-                        </span>
-                    </div>
-
-                    <pre class="form-control" id="lapspwexpiredate">
-                    <code>@item.LAPSPasswordExpireDate.ToString()</code>
-                    </pre>
-
-                </div>
-
-            </div>
-
-        </div>
-
+        </MudGrid>
     }
 
-    @if (!String.IsNullOrWhiteSpace(ErrorMessage))
-    {
-        <div class="mt-5 alert alert-danger" role="alert">
-            @ErrorMessage
-
-        </div>
-    }
-
-</div>
-}
+ </MudContainer>
 
 @code {
+    private bool IsCopyToClipboardSupported { get; set; }
 
-    private bool authOK { get; set; }
+    private bool Authenticated { get; set; } = true;
 
-    private List<ADComputer> SelectedItems { get; set; } = new List<ADComputer>();
+    private LdapForNet.LdapCredential? LdapCredential { get; set; }
 
-    private ADComputer[] DataSource { get; set; } = new List<ADComputer>().ToArray();
+    private List<ADComputer> SelectedComputers { get; set; } = new List<ADComputer>();
 
-    private string ErrorMessage { get; set; } = String.Empty;
+    readonly Func<ADComputer, string> _ADComputerToStringConverter = p => (p is null ? string.Empty : p.Name);
 
-    private InputSelect2Options InputSelect2Options { get; set; }
-
-    private async Task SelectedComputerChanged()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Authenticated = await sessionManager.IsUserLoggedInAsync();
 
-        ErrorMessage = String.Empty;
+        if (!Authenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
 
+        if (firstRender)
+        {
+            if (Authenticated)
+            {
+                LdapCredential = await sessionManager.GetLdapCredentialsAsync();    
+            }
+
+            IsCopyToClipboardSupported = await clipboard.IsSupportedAsync();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnSelectedItemChangedAsync(ADComputer value)
+    {
+        if (value != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Any(x => x.Name == value.Name))
+        {
+            await FetchComputerDetailsAsync(value.Name);
+        }
+    }
+
+    private async Task CopyLAPSPasswordToClipboardAsync(string password)
+    {
+        await clipboard.WriteTextAsync(password);
+        Snackbar.Add("Copied password to clipboard!", Severity.Success);
+
+    }
+
+    private async Task RefreshComputerDetailsAsync(string computerName)
+    {
         try
         {
-            foreach (var item in SelectedItems)
-            {
-                if (item != null)
-                {
-                    var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), item.Name);
-                    item.LAPSPassword = tmp.LAPSPassword;
-                    item.LAPSPasswordExpireDate = tmp.LAPSPasswordExpireDate;
-                }
+            var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
 
+            if (tmp != null)
+            {
+                SelectedComputers.Where(x => x.Name == computerName).First().LAPSPassword = tmp.LAPSPassword;
+                SelectedComputers.Where(x => x.Name == computerName).First().LAPSPasswordExpireDate = tmp.LAPSPasswordExpireDate;
+                await InvokeAsync(StateHasChanged);
+                Snackbar.Add($"LAPS data for computer {computerName} successfully refreshed!", Severity.Success);
+            }
+        }
+        catch (Exception)
+        {
+            Snackbar.Add($"Failed to refresh LAPS data for computer {computerName}", Severity.Error);
+        }
+    }
+
+    private async Task FetchComputerDetailsAsync(string computerName)
+    {
+        try
+        {
+            var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
+            if (tmp != null)
+            {
+                SelectedComputers.Add(tmp);    
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            Snackbar.Add($"Failed to fetch LAPS data for computer {computerName}\nError: {ex.Message}",Severity.Error);
         }
-
-        StateHasChanged();
     }
 
-    private async Task<List<ADComputer>> SearchAsync(ADComputer[] allItems, string filter, System.Threading.CancellationToken token)
+    private void RemoveComputerCard(string computerName)
     {
-        DataSource = (await LDAPService.SearchADComputersAsync(await sessionManager.GetLdapCredentialsAsync(), filter)).ToArray();
-
-        return await LDAPService.SearchADComputersAsync(await sessionManager.GetLdapCredentialsAsync(), filter);
+        SelectedComputers.RemoveAll(x => x.Name == computerName);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task<IEnumerable<ADComputer>> SearchAsync(string value)
     {
-        authOK = await sessionManager.IsUserLoggedInAsync();
+        List<ADComputer> searchResult = new();
 
-        if (firstRender)
+        if (string.IsNullOrEmpty(value))
         {
-            InputSelect2Options = new InputSelect2Options();
-
-            InputSelect2Options.AllowClear = true;
-            InputSelect2Options.MinimumInputLength = 4;
-            InputSelect2Options.Placeholder = "Search by Computername";
-            InputSelect2Options.Theme = "bootstrap4";
-            InputSelect2Options.Multiple = false;
-            InputSelect2Options.CloseOnSelect = true;
-
-            await JSRuntime.InvokeVoidAsync("initClipboardJS");
+            return new List<ADComputer>();
         }
 
-        StateHasChanged();
+        var tmp = (await LDAPService.SearchADComputersAsync(LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value));
 
-        if (!authOK)
+        if (tmp != null)
         {
-            NavigationManager.NavigateTo("/login");
+            searchResult.AddRange(tmp);
         }
+
+        return searchResult;
+
     }
 
 }

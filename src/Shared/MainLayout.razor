@@ -1,36 +1,70 @@
 ﻿@inherits LayoutComponentBase
-@inject ISessionManagerService sessionManager
 @inject NavigationManager NavigationManager
-@using LAPS_WebUI.Services;
+@inject ISessionManagerService sessionManager
 
-<div class="page">
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
-    <div class="main">
-        <nav class="navbar navbar-dark bg-dark">
-            <a class="navbar-brand" href="#">LAPS WebUI</a>
-            <button class="btn btn-outline-success my-2 my-sm-2" hidden=@showLogout @onclick="Logout">
-                Logout
-            </button>
-        </nav>
+<PageTitle>LAPS-WebUI</PageTitle>
 
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
-</div>
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudText Typo="Typo.h5" Class="ml-3">LAPS WebUI</MudText>
+        <MudSpacer />
+        <MudTooltip Text="Toggle Dark Mode">
+            <MudIconButton Icon="@Icons.Material.Outlined.DarkMode" Color="Color.Inherit" OnClick="@((_) => ToggleDarkMode())" aria-label="Toggle Dark Mode" />
+        </MudTooltip>
+        @if (IsUserLoggedIn)
+        {
+            <MudTooltip Text="Logout">
+                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" OnClick="@Logout" aria-label="logout" />
+            </MudTooltip>
+                
+        }
+    </MudAppBar>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
 
 @code{
 
-    public bool showLogout { get; set; }
+    private bool _isDarkMode;
+    private MudThemeProvider _mudThemeProvider = new();
+    private bool IsUserLoggedIn { get; set; } = false;
+    private MudTheme MyCustomTheme = new MudTheme();
+
+    void ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
 
     private void Logout()
     {
         NavigationManager.NavigateTo("/logout");
     }
 
+    protected override void OnInitialized()
+    {
+        MyCustomTheme.Palette.Primary = Colors.BlueGrey.Lighten2;
+        MyCustomTheme.Palette.AppbarBackground = Colors.BlueGrey.Lighten1;
+        MyCustomTheme.PaletteDark.Primary = Colors.BlueGrey.Lighten1;
+        MyCustomTheme.PaletteDark.AppbarBackground = Colors.BlueGrey.Darken1;
+        base.OnInitialized();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        showLogout = !(await sessionManager.IsUserLoggedInAsync());
-        StateHasChanged();
+        IsUserLoggedIn = await sessionManager.IsUserLoggedInAsync();
+
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+        }
+
+        await InvokeAsync(StateHasChanged);
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

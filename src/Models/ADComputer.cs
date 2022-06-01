@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace LAPS_WebUI.Models
+﻿namespace LAPS_WebUI.Models
 {
     public class ADComputer
     {
         public ADComputer(string name)
         {
             this.Name = name;
+            this.LAPSPassword = String.Empty;
+            this.LAPSPasswordExpireDate = DateTime.MinValue;
         }
 
         public string Name { get; set; }
