@@ -33,7 +33,7 @@ docker run -d \
 - Login with any Active Directory User which can access the LAPS LDAP Properties
 - Type any Computername in the Searchbox and click a result to view the LAPS Password.
 
-## Why is there now User Management?
+## Why is there no User Management?
 
 There is none cause *LAPS-WebUI* authenticates against your ActiveDirectory. There is also defined who can read those LAPS Passwords.
 
