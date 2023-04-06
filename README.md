@@ -4,7 +4,7 @@ A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 ## Setup Preqesites
 
 - A working Active Directory with Microsoft LAPS installed
-- .NET Core 6.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
+- .NET Core 7.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
 
 ## Setup (bare metal):
 
@@ -25,7 +25,7 @@ docker run -d \
   -e LDAP__SearchBase=DC=example,DC=com \
   -p 8080:8080 \
   --restart unless-stopped \
-  ghcr.io/seji64/laps-webui:1.4.1
+  ghcr.io/seji64/laps-webui:1.4.2
 ```
 
 ## Usage:
