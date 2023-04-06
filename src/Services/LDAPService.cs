@@ -36,7 +36,7 @@ namespace LAPS_WebUI.Services
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error("{ErrorMessage}",ex.Message);
                 return null;
             }
 
@@ -114,7 +114,7 @@ namespace LAPS_WebUI.Services
 
         public async Task<List<ADComputer>> SearchADComputersAsync(LdapCredential ldapCredential, string query)
         {
-            List<ADComputer> result = new List<ADComputer>();
+            List<ADComputer> result = new();
 
             if (ldapCredential is null)
             {
@@ -143,7 +143,7 @@ namespace LAPS_WebUI.Services
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error("{ErrorMessage}", ex.Message);
                 }
             }
             return result;
