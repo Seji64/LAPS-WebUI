@@ -3,7 +3,7 @@ using LdapForNet;
 
 namespace LAPS_WebUI.Interfaces
 {
-    public interface ILDAPService
+    public interface ILdapService
     {
         Task<LdapConnection?> CreateBindAsync(string username, string password);
         Task<bool> TestCredentialsAsync(string username, string password);

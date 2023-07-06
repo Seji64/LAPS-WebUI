@@ -1,18 +1,24 @@
-﻿using LAPS_WebUI.Interfaces;
+﻿using CliWrap;
+using LAPS_WebUI.Interfaces;
 using LAPS_WebUI.Models;
 using LdapForNet;
 using LdapForNet.Native;
 using Microsoft.Extensions.Options;
 using Serilog;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
 
 namespace LAPS_WebUI.Services
 {
-    public class LDAPService : ILDAPService
+    public class LdapService : ILdapService
     {
-        private readonly IOptions<LDAPOptions> _ldapOptions;
-        public LDAPService(IOptions<LDAPOptions> ldapoptions)
+        private readonly IOptions<LdapOptions> _ldapOptions;
+        private readonly IOptions<LapsOptions> _lapsOptions;
+        public LdapService(IOptions<LdapOptions> ldapoptions, IOptions<LapsOptions> lapsOptions)
         {
             _ldapOptions = ldapoptions;
+            _lapsOptions = lapsOptions;
         }
 
         public async Task<LdapConnection?> CreateBindAsync(string username, string password)
@@ -22,14 +28,14 @@ namespace LAPS_WebUI.Services
 
             try
             {
-                ldapConnection.Connect(_ldapOptions.Value.Server, _ldapOptions.Value.Port, _ldapOptions.Value.UseSSL ? LdapForNet.Native.Native.LdapSchema.LDAPS : LdapForNet.Native.Native.LdapSchema.LDAP);
+                ldapConnection.Connect(_ldapOptions.Value.Server, _ldapOptions.Value.Port, _ldapOptions.Value.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
 
                 if (_ldapOptions.Value.TrustAllCertificates)
                 {
                     ldapConnection.TrustAllCertificates();
                 }
 
-                await ldapConnection.BindAsync(LdapForNet.Native.Native.LdapAuthMechanism.SIMPLE, username, password);
+                await ldapConnection.BindAsync(Native.LdapAuthMechanism.SIMPLE, username, password);
 
                 ldapConnection.SetOption(Native.LdapOption.LDAP_OPT_REFERRALS, IntPtr.Zero);
 
@@ -91,17 +97,102 @@ namespace LAPS_WebUI.Services
 
                 if (ldapSearchResult != null)
                 {
-                    ADComputer = new ADComputer(ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First());
+                    ADComputer = new ADComputer(ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First())
+                    {
+                        LAPSInformations = new()
+                    };
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd"))
+                    #region "Try LAPS v1"
+
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (_lapsOptions.Value.ForceVersion is null || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v1))
                     {
-                        ADComputer.LAPSPassword = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First().ToString();
-                        ADComputer.LAPSPasswordExpireDate = DateTime.FromFileTime(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First().ToString()));
+                        LapsInformation lapsInformationEntry = new()
+                        {
+                            Version = Enums.LAPSVersion.v1,
+                            Account = null,
+                            Password = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First().ToString(),
+                            PasswordExpireDate = DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First().ToString())),
+                            IsCurrent = true,
+                            PasswordSetDate = null
+                        };
+
+                        ADComputer.LAPSInformations.Add(lapsInformationEntry);
                     }
-                    else
+
+                    #endregion
+
+                    #region "Try LAPS v2"
+
+                    string fieldName = (_lapsOptions.Value.EncryptionDisabled ? "msLAPS-Password" : "msLAPS-EncryptedPassword");
+
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (_lapsOptions.Value.ForceVersion is null || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v2))
                     {
-                        throw new Exception("No permission to retrieve LAPS Password");
+                        MsLAPSPayload? msLAPS_Payload = null;
+                        string ldapValue = string.Empty;
+
+                        if (_lapsOptions.Value.EncryptionDisabled)
+                        {
+                            ldapValue = ldapSearchResult.DirectoryAttributes["msLAPS-Password"].GetValues<string>().First().ToString();
+                        }
+                        else
+                        {
+                            byte[] encryptedPass = ldapSearchResult.DirectoryAttributes["msLAPS-EncryptedPassword"].GetValues<byte[]>().First().Skip(16).ToArray();
+                            ldapValue = await DecryptLAPSPayload(encryptedPass, ldapCredential);
+                        }
+
+                        msLAPS_Payload = JsonSerializer.Deserialize<MsLAPSPayload>(ldapValue) ?? throw new Exception("Failed to parse LAPS Password");
+
+                        LapsInformation lapsInformationEntry = new()
+                        {
+                            Version = Enums.LAPSVersion.v2,
+                            Account = msLAPS_Payload.ManagedAccountName,
+                            Password = msLAPS_Payload.Password,
+                            PasswordExpireDate =  DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["msLAPS-PasswordExpirationTime"].GetValues<string>().First().ToString())),
+                            IsCurrent = true,
+                            PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber))
+                            
+                        };
+
+                        ADComputer.LAPSInformations.Add(lapsInformationEntry);
+
+                        if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "msLAPS-EncryptedPasswordHistory"))
+                        {
+
+                            foreach (var historyEntry in ldapSearchResult.DirectoryAttributes["msLAPS-EncryptedPasswordHistory"].GetValues<byte[]>())
+                            {
+                                byte[] historicEncryptedPass = historyEntry.Skip(16).ToArray();
+                                string historicLdapValue = await DecryptLAPSPayload(historicEncryptedPass, ldapCredential);
+                                var historic_msLAPS_Payload = JsonSerializer.Deserialize<MsLAPSPayload>(historicLdapValue);
+
+                                if (historic_msLAPS_Payload != null)
+                                {
+                                    LapsInformation historicLapsInformationEntry = new()
+                                    {
+                                        Version = Enums.LAPSVersion.v2,
+                                        Account = historic_msLAPS_Payload.ManagedAccountName,
+                                        Password = historic_msLAPS_Payload.Password,
+                                        PasswordExpireDate = null,
+                                        PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(historic_msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber))
+                                    };
+
+                                    ADComputer.LAPSInformations.Add(historicLapsInformationEntry);
+                                }
+                                else
+                                {
+                                    Log.Warning("Failed to decrypt LAPS History entry");
+                                }
+                            }
+                        }
+
+                        if (ADComputer.LAPSInformations is null || !ADComputer.LAPSInformations.Any())
+                        {
+                            throw new Exception("No permission to retrieve LAPS Password or no LAPS Password set!");
+                        }
+
+                        ADComputer.LAPSInformations = ADComputer.LAPSInformations.OrderBy(x => x.PasswordExpireDate).ToList();
                     }
+
+                    #endregion
                 }
                 else
                 {
@@ -110,6 +201,28 @@ namespace LAPS_WebUI.Services
             }
 
             return ADComputer;
+        }
+
+        private static async Task<string> DecryptLAPSPayload(byte[] value, LdapCredential ldapCredential)
+        {
+            StringBuilder pythonScriptResult = new();
+            string pythonDecryptScriptPath = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "scripts", "DecryptEncryptedLAPSPassword.py");
+
+            var pythonCmd = Cli.Wrap("python3")
+                            .WithArguments($"\"{pythonDecryptScriptPath}\" --user {ldapCredential.UserName} --password {ldapCredential.Password} --data {Convert.ToBase64String(value)})")
+                            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult));
+
+            await pythonCmd.ExecuteAsync();
+
+            if (pythonDecryptScriptPath is null || pythonDecryptScriptPath.Length == 0)
+            {
+                throw new Exception("Failed to decrypt laps password!");
+            }
+
+            string ldapValue = pythonScriptResult.ToString().Trim();
+            ldapValue = ldapValue.Remove(ldapValue.LastIndexOf("}") + 1);
+
+            return ldapValue;
         }
 
         public async Task<List<ADComputer>> SearchADComputersAsync(LdapCredential ldapCredential, string query)

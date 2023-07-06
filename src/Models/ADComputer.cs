@@ -5,12 +5,24 @@
         public ADComputer(string name)
         {
             this.Name = name;
-            this.LAPSPassword = String.Empty;
-            this.LAPSPasswordExpireDate = DateTime.MinValue;
         }
 
         public string Name { get; set; }
-        public string LAPSPassword { get; set; }
-        public DateTime LAPSPasswordExpireDate { get; set; }
+        public List<LapsInformation>? LAPSInformations { get; set; }
+
+        public bool Loading
+        {
+            get
+            {
+                if (LAPSInformations is null || !LAPSInformations.Any())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
     }
 }

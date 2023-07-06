@@ -1,7 +1,7 @@
 ﻿@page "/laps"
 @inject ISessionManagerService sessionManager
 @inject NavigationManager NavigationManager
-@inject ILDAPService LDAPService
+@inject ILdapService LDAPService
 @inject ISnackbar Snackbar
 @inject ClipboardService clipboard
 @using CurrieTechnologies.Razor.Clipboard
@@ -14,9 +14,9 @@
     }
     else
     {
-        <MudAutocomplete Label="Search by Computername" HelperTextOnFocus="true" HelperText="Minimum query length is 4. Wildcard (*) is supported"
-            MaxItems=null ValueChanged="@((ADComputer a) => OnSelectedItemChangedAsync(a))" MinCharacters="4" SearchFunc="@SearchAsync" ToStringFunc="@_ADComputerToStringConverter" Immediate="true" ResetValueOnEmptyText="true"
-            AdornmentIcon="@Icons.Material.Outlined.Search" AdornmentColor="Color.Secondary" SelectValueOnTab=true Clearable=true aria-label="Search Box">
+        <MudAutocomplete Label="Search by Computername" HelperTextOnFocus="true" HelperText="Minimum query length is 4. Wildcard (*) is supported" ShowProgressIndicator="true"
+            MaxItems=null ValueChanged="@(async (ADComputer a) => OnSelectedItemChangedAsync(a).AndForget())" MinCharacters="4" SearchFunc="@SearchAsync" ToStringFunc="@_ADComputerToStringConverter" Immediate="true" ResetValueOnEmptyText="true"
+            AdornmentIcon="@Icons.Material.Outlined.Search" AdornmentColor="Color.Default" Adornment="Adornment.Start" SelectValueOnTab=true Clearable=true aria-label="Search Computer" >
                 <ItemTemplate Context="e">
                     <MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Computer" Class="mb-n1 mr-3" aria-label=@($"{e.Name}")/>@($"{e.Name}")
@@ -33,23 +33,65 @@
 
             @foreach(var computer in SelectedComputers)
             {
-                <MudItem xs="10" sm="6">
+                <MudItem xs="10" sm="8">
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h5">@computer.Name</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
-                               <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close"/>
+                               <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close" Disabled=@(computer.Loading)/>
                             </CardHeaderActions>       
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudField Label="Password" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password">@computer.LAPSPassword</MudField>
-                            <MudField Class="mt-6" Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date" >@computer.LAPSPasswordExpireDate</MudField>
+                            @if(computer.LAPSInformations != null || !computer.Loading)
+                            {
+                                <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" @ref="_tabs" PanelClass="pa-4">
+                                    <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v1 && x.IsCurrent))>
+                                        <LapsInformationDetail LapsInfo="computer.LAPSInformations!.Single(x => x.Version == Enums.LAPSVersion.v1)" />
+                                    </MudTabPanel>
+                                    <MudTabPanel Icon="@Icons.Material.Outlined.Filter2" ID="@("v2")" Text="v2" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v2 && x.IsCurrent))>
+                                        <LapsInformationDetail LapsInfo="computer.LAPSInformations!.Single(x => x.Version == Enums.LAPSVersion.v2 && x.IsCurrent)" />
+                                    </MudTabPanel>
+                                    <MudTabPanel Icon="@Icons.Material.Outlined.History" ID="@("history")" Text="History" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v2 && !x.IsCurrent))>
+                                        <MudSimpleTable Style="overflow-x: auto;" Dense="true" Hover="true" Striped="true">
+                                            <thead>
+                                                <tr>
+                                                    <th>Account</th>
+                                                    <th>Password</th>
+                                                    <th>Date set</th>
+                                                 </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach(var entry in computer.LAPSInformations!.Where(x => x.IsCurrent == false && x.Version == Enums.LAPSVersion.v2))
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @entry.Account
+                                                        </td>
+                                                        <td>
+                                                            @entry.Password
+                                                        </td>
+                                                        <td>
+                                                            @entry.PasswordSetDate
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </MudSimpleTable>
+                                    </MudTabPanel>
+                                </MudTabs>
+                            }
+                            else
+                            {
+                                <div class="d-flex justify-center">
+                                    <MudProgressCircular Class="" Indeterminate="true" Size="Size.Large" Disabled=@(computer.Loading) />
+                                </div>
+                            }
                         </MudCardContent>
                         <MudCardActions>
                             <MudTooltip Text="@(IsCopyToClipboardSupported ? "Copy Password to clipboard" : "Your browser does not support Clipboard API - please use STRG+C")">
-                                <MudIconButton Disabled="@(!IsCopyToClipboardSupported)" Icon="@Icons.Material.Filled.FileCopy" Color="Color.Info" OnClick="@(async e => await CopyLAPSPasswordToClipboardAsync(computer.LAPSPassword))" aria-label="Copy Password to clipbard"/>
+                                <MudIconButton Disabled="@(!IsCopyToClipboardSupported || (_tabs != null && _tabs.ActivePanel != null && _tabs.ActivePanel.ID.ToString() == "history"))" Icon="@Icons.Material.Filled.FileCopy" Color="Color.Tertiary" OnClick="@(async e => await CopyLAPSPasswordToClipboardAsync(computer))" aria-label="Copy Password to clipbard"/>
                             </MudTooltip>
                             <MudTooltip Text="Refresh">
                                 <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Tertiary" OnClick="@(async e => await RefreshComputerDetailsAsync(computer.Name))" aria-label="refresh"/>
@@ -61,116 +103,4 @@
 
         </MudGrid>
     }
-
  </MudContainer>
-
-@code {
-    private bool IsCopyToClipboardSupported { get; set; }
-
-    private bool Authenticated { get; set; } = true;
-
-    private LdapForNet.LdapCredential? LdapCredential { get; set; }
-
-    private List<ADComputer> SelectedComputers { get; set; } = new List<ADComputer>();
-
-    readonly Func<ADComputer, string> _ADComputerToStringConverter = p => (p is null ? string.Empty : p.Name);
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        Authenticated = await sessionManager.IsUserLoggedInAsync();
-
-        if (!Authenticated)
-        {
-            NavigationManager.NavigateTo("/login");
-        }
-
-        if (firstRender)
-        {
-            if (Authenticated)
-            {
-                LdapCredential = await sessionManager.GetLdapCredentialsAsync();    
-            }
-
-            IsCopyToClipboardSupported = await clipboard.IsSupportedAsync();
-        }
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task OnSelectedItemChangedAsync(ADComputer value)
-    {
-        if (value != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Any(x => x.Name == value.Name))
-        {
-            await FetchComputerDetailsAsync(value.Name);
-        }
-    }
-
-    private async Task CopyLAPSPasswordToClipboardAsync(string password)
-    {
-        await clipboard.WriteTextAsync(password);
-        Snackbar.Add("Copied password to clipboard!", Severity.Success);
-
-    }
-
-    private async Task RefreshComputerDetailsAsync(string computerName)
-    {
-        try
-        {
-            var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
-
-            if (tmp != null)
-            {
-                SelectedComputers.Where(x => x.Name == computerName).First().LAPSPassword = tmp.LAPSPassword;
-                SelectedComputers.Where(x => x.Name == computerName).First().LAPSPasswordExpireDate = tmp.LAPSPasswordExpireDate;
-                await InvokeAsync(StateHasChanged);
-                Snackbar.Add($"LAPS data for computer {computerName} successfully refreshed!", Severity.Success);
-            }
-        }
-        catch (Exception)
-        {
-            Snackbar.Add($"Failed to refresh LAPS data for computer {computerName}", Severity.Error);
-        }
-    }
-
-    private async Task FetchComputerDetailsAsync(string computerName)
-    {
-        try
-        {
-            var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
-            if (tmp != null)
-            {
-                SelectedComputers.Add(tmp);    
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Failed to fetch LAPS data for computer {computerName}\nError: {ex.Message}",Severity.Error);
-        }
-    }
-
-    private void RemoveComputerCard(string computerName)
-    {
-        SelectedComputers.RemoveAll(x => x.Name == computerName);
-    }
-
-    private async Task<IEnumerable<ADComputer>> SearchAsync(string value)
-    {
-        List<ADComputer> searchResult = new();
-
-        if (string.IsNullOrEmpty(value))
-        {
-            return new List<ADComputer>();
-        }
-
-        var tmp = (await LDAPService.SearchADComputersAsync(LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value));
-
-        if (tmp != null)
-        {
-            searchResult.AddRange(tmp);
-        }
-
-        return searchResult;
-
-    }
-
-}

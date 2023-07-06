@@ -4,7 +4,7 @@ A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 ## Setup Preqesites
 
 - A working Active Directory with Microsoft LAPS installed
-- .NET Core 6.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
+- .NET Core 7.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
 
 ## Setup (bare metal):
 
@@ -13,6 +13,18 @@ A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 - Adjust appsettings.json or set the settings via Environment Variables
 - Run *LAPS-WebUI*
 
+## Notes for LAPS v2
+- Since Version 1.5.0 LAPS v2 is supported
+- By default, LAPS v2 passwords are encrypted. If the LAPS v2 passwords are stored unencrypted, then you have to set
+  `EncryptionDisabled` to `true` in the settings
+- When LAPS v2 Passwords are encrypted a direct connection to the domain controllers with `Kerberos` and `DCE-RPC` is needed in order to decrypt those passwords. For LAPS v1 and unecrypted LAPS v2 passwords only `LDAP` is needed
+### New LAPS Settings
+```
+  "LAPS": {
+	"ForceVersion": null, # Allowed Values: v1, v2 | Default: null (both versions)
+	"EncryptionDisabled": false # Allowed Values: true, false | Default: false
+  }
+```
 ## Setup (docker):
 
 Running LAPS-WebUI in docker is quite easy:

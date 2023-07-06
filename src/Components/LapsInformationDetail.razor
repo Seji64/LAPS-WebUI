@@ -1,0 +1,16 @@
+﻿@inherits MudComponentBase
+@if (LapsInfo != null)
+{
+    <MudStack Spacing="2">
+        <MudField Label="Password" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password">@LapsInfo.Password</MudField>
+        @if (LapsInfo.Account != null)
+        {
+            <MudField Label="Account" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.AccountCircle" AdornmentColor="Color.Default" aria-label="LAPS Managed Account">@LapsInfo.Account</MudField>
+        }
+        @if (LapsInfo.PasswordSetDate != null)
+        {
+            <MudField Label="Set Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.MoreTime" AdornmentColor="Color.Default" aria-label="LAPS Password Set Date">@LapsInfo.PasswordSetDate</MudField>
+        }
+        <MudField Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date">@LapsInfo.PasswordExpireDate</MudField>
+    </MudStack>
+}

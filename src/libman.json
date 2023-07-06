@@ -7,7 +7,7 @@
       "destination": "wwwroot/roboto-fontface-material/"
     },
     {
-      "library": "material-design-icons-iconfont@6.1.0",
+      "library": "material-design-icons-iconfont@6.7.0",
       "destination": "wwwroot/material-design-icons-iconfont/",
       "files": [
         "dist/LICENSE",

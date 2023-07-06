@@ -8,10 +8,10 @@ namespace LAPS_WebUI.Services
     {
 
         private readonly ISessionStorageService _sessionStorageService;
-        private readonly ILDAPService _ldapService;
+        private readonly ILdapService _ldapService;
         private readonly ICryptService _cryptService;
 
-        public SessionManagerService(ISessionStorageService sessionStorageService, ILDAPService ldapService, ICryptService cryptService)
+        public SessionManagerService(ISessionStorageService sessionStorageService, ILdapService ldapService, ICryptService cryptService)
         {
             _sessionStorageService = sessionStorageService;
             _ldapService = ldapService;

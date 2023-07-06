@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using MudBlazor.Utilities;
 @inject NavigationManager NavigationManager
 @inject ISessionManagerService sessionManager
 
@@ -27,44 +28,3 @@
         @Body
     </MudMainContent>
 </MudLayout>
-
-
-@code{
-
-    private bool _isDarkMode;
-    private MudThemeProvider _mudThemeProvider = new();
-    private bool IsUserLoggedIn { get; set; } = false;
-    private MudTheme MyCustomTheme = new MudTheme();
-
-    void ToggleDarkMode()
-    {
-        _isDarkMode = !_isDarkMode;
-    }
-
-    private void Logout()
-    {
-        NavigationManager.NavigateTo("/logout");
-    }
-
-    protected override void OnInitialized()
-    {
-        MyCustomTheme.Palette.Primary = Colors.BlueGrey.Lighten2;
-        MyCustomTheme.Palette.AppbarBackground = Colors.BlueGrey.Lighten1;
-        MyCustomTheme.PaletteDark.Primary = Colors.BlueGrey.Lighten1;
-        MyCustomTheme.PaletteDark.AppbarBackground = Colors.BlueGrey.Darken1;
-        base.OnInitialized();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        IsUserLoggedIn = await sessionManager.IsUserLoggedInAsync();
-
-        if (firstRender)
-        {
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
-        }
-
-        await InvokeAsync(StateHasChanged);
-        await base.OnAfterRenderAsync(firstRender);
-    }
-}

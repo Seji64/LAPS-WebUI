@@ -26,8 +26,9 @@ builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddClipboard();
 builder.Services.AddDataProtection();
 
-builder.Services.Configure<LDAPOptions>(builder.Configuration.GetSection("LDAP"));
-builder.Services.AddScoped<ILDAPService, LDAPService>();
+builder.Services.Configure<LdapOptions>(builder.Configuration.GetSection("LDAP"));
+builder.Services.Configure<LapsOptions>(builder.Configuration.GetSection("LAPS"));
+builder.Services.AddScoped<ILdapService, LdapService>();
 builder.Services.AddScoped<ISessionManagerService, SessionManagerService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();
 

@@ -1,6 +1,6 @@
 ﻿namespace LAPS_WebUI.Models
 {
-    public class LDAPOptions
+    public class LdapOptions
     {
         public string? Server { get; set; }
         public int Port { get; set; }

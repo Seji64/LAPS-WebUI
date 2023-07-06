@@ -34,36 +34,3 @@
     </EditForm>
 
 </MudContainer>
-
-@code {
-    private UserLoginRequest _loginRequest = new UserLoginRequest();
-    private bool _processing;
-    private string _errorMessage = string.Empty;
-
-    private async Task OnValidSubmitAsync(EditContext context)
-    {
-        _errorMessage = string.Empty;
-        _processing = true;
-        try
-        {
-            if (await sessionManager.LoginAsync(_loginRequest.Username ?? string.Empty,_loginRequest.Password ?? string.Empty))
-            {
-                NavigationManager.NavigateTo("/laps");
-            }
-            else
-            {
-                throw new Exception("Login failed!");
-            }
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = ex.Message;
-        }
-        finally
-        {
-            _processing = false;
-            await InvokeAsync(StateHasChanged);
-        }      
-    }
-
-}
