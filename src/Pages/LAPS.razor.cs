@@ -41,7 +41,7 @@ namespace LAPS_WebUI.Pages
 
         private async Task OnSelectedItemChangedAsync(ADComputer value)
         {
-            if (value != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Any(x => x.Name == value.Name))
+            if (value != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
             {
                 await FetchComputerDetailsAsync(value.Name);
             }
@@ -127,11 +127,13 @@ namespace LAPS_WebUI.Pages
                 SelectedComputers.Add(placeHolder);
                 await InvokeAsync(StateHasChanged);
 
-                var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
+                var AdComputerObject = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
+                var selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
 
-                if (tmp != null)
+                if (AdComputerObject != null && selectedComputer != null)
                 {
-                    SelectedComputers.Single(x => x.Name == computerName).LAPSInformations = tmp.LAPSInformations;
+                    selectedComputer.LAPSInformations = AdComputerObject.LAPSInformations;
+                    selectedComputer.FailedToRetrieveLAPSDetails = AdComputerObject.FailedToRetrieveLAPSDetails;
                 }
             }
             catch (Exception ex)

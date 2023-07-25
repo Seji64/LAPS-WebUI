@@ -88,7 +88,7 @@ namespace LAPS_WebUI.Services
             {
                 if (ldapConnection is null)
                 {
-                    throw new Exception("LDAP bin failed!");
+                    throw new Exception("LDAP bind failed!");
                 }
 
                 string? defaultNamingContext = _ldapOptions.Value.SearchBase;
@@ -183,16 +183,19 @@ namespace LAPS_WebUI.Services
                                 }
                             }
                         }
-
-                        if (ADComputer.LAPSInformations is null || !ADComputer.LAPSInformations.Any())
-                        {
-                            throw new Exception("No permission to retrieve LAPS Password or no LAPS Password set!");
-                        }
-
-                        ADComputer.LAPSInformations = ADComputer.LAPSInformations.OrderBy(x => x.PasswordExpireDate).ToList();
                     }
 
                     #endregion
+
+                    if (ADComputer.LAPSInformations is null || !ADComputer.LAPSInformations.Any())
+                    {
+                        ADComputer.FailedToRetrieveLAPSDetails = true;
+                    }
+                    else
+                    {
+                        ADComputer.LAPSInformations = ADComputer.LAPSInformations.OrderBy(x => x.PasswordExpireDate).ToList();
+                    }
+     
                 }
                 else
                 {
@@ -208,7 +211,9 @@ namespace LAPS_WebUI.Services
             StringBuilder pythonScriptResult = new();
             string pythonDecryptScriptPath = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "scripts", "DecryptEncryptedLAPSPassword.py");
 
-            var pythonCmd = Cli.Wrap("python3")
+            string pythonBin = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "python" : "python3";
+
+            var pythonCmd = Cli.Wrap(pythonBin)
                             .WithArguments($"\"{pythonDecryptScriptPath}\" --user {ldapCredential.UserName} --password {ldapCredential.Password} --data {Convert.ToBase64String(value)})")
                             .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult));
 
@@ -236,7 +241,7 @@ namespace LAPS_WebUI.Services
 
             using (LdapConnection? ldapConnection = await CreateBindAsync(ldapCredential.UserName, ldapCredential.Password))
             {
-                var filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith("*") ? "" : "*")}))";
+                string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
                 var PropertiesToLoad = new string[] { "cn" };
                 string? defaultNamingContext = _ldapOptions.Value.SearchBase;
 

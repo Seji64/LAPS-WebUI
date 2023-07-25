@@ -9,12 +9,12 @@
 
         public string Name { get; set; }
         public List<LapsInformation>? LAPSInformations { get; set; }
-
+        public bool FailedToRetrieveLAPSDetails { get; set; }
         public bool Loading
         {
             get
             {
-                if (LAPSInformations is null || !LAPSInformations.Any())
+                if (LAPSInformations is null)
                 {
                     return true;
                 }

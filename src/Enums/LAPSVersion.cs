@@ -1,6 +1,4 @@
-﻿using System.Runtime.Intrinsics;
-
-namespace LAPS_WebUI.Enums
+﻿namespace LAPS_WebUI.Enums
 {
     public enum LAPSVersion
     {
