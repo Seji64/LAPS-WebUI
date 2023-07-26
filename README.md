@@ -21,9 +21,9 @@ A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 ### New LAPS Settings
 ```
   "LAPS": {
-	"ForceVersion": null, # Allowed Values: v1, v2 | Default: null (both versions)
-	"EncryptionDisabled": false # Allowed Values: true, false | Default: false
-  }
+    "ForceVersion": "All", // Allowed Values: All, v1, v2 | Default: All (v1 & v2)
+    "EncryptionDisabled": false // Allowed Values: true, false | Default: false
+  },
 ```
 ## Setup (docker):
 
