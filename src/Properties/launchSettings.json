@@ -22,7 +22,8 @@
         "LDAP__Server": "ldap.prime.k-sys.io",
         "LDAP__Port": "636",
         "LDAP__UseSSL": "true",
-        "LDAP__SearchBase": "OU=Klett IT GmbH,DC=prime,DC=k-sys,DC=io"
+        "LDAP__SearchBase": "OU=Klett IT GmbH,DC=prime,DC=k-sys,DC=io",
+        "LAPS__ForceVersion": "All"
       },
       "applicationUrl": "https://localhost:7213;http://localhost:5213",
       "dotnetRunMessages": true

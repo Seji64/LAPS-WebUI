@@ -104,7 +104,7 @@ namespace LAPS_WebUI.Services
 
                     #region "Try LAPS v1"
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (_lapsOptions.Value.ForceVersion is null || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v1))
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (_lapsOptions.Value.ForceVersion == Enums.LAPSVersion.All || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v1))
                     {
                         LapsInformation lapsInformationEntry = new()
                         {
@@ -125,7 +125,7 @@ namespace LAPS_WebUI.Services
 
                     string fieldName = (_lapsOptions.Value.EncryptionDisabled ? "msLAPS-Password" : "msLAPS-EncryptedPassword");
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (_lapsOptions.Value.ForceVersion is null || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v2))
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (_lapsOptions.Value.ForceVersion == Enums.LAPSVersion.All || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v2))
                     {
                         MsLAPSPayload? msLAPS_Payload = null;
                         string ldapValue = string.Empty;

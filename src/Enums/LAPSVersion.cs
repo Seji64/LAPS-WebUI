@@ -2,7 +2,8 @@
 {
     public enum LAPSVersion
     {
-        v1,
-        v2
+        All = 0,
+        v1 = 1,
+        v2 = 2
     }
 }

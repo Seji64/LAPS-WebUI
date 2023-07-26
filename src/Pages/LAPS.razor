@@ -50,10 +50,10 @@
                                 {
                                     <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" @ref="_tabs" PanelClass="pa-4">
                                         <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v1 && x.IsCurrent))>
-                                            <LapsInformationDetail LapsInfo="computer.LAPSInformations!.Single(x => x.Version == Enums.LAPSVersion.v1)" />
+                                            <LapsInformationDetail LapsInfo="computer.LAPSInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)" />
                                         </MudTabPanel>
                                         <MudTabPanel Icon="@Icons.Material.Outlined.Filter2" ID="@("v2")" Text="v2" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v2 && x.IsCurrent))>
-                                            <LapsInformationDetail LapsInfo="computer.LAPSInformations!.Single(x => x.Version == Enums.LAPSVersion.v2 && x.IsCurrent)" />
+                                            <LapsInformationDetail LapsInfo="computer.LAPSInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v2 && x.IsCurrent)" />
                                         </MudTabPanel>
                                         <MudTabPanel Icon="@Icons.Material.Outlined.History" ID="@("history")" Text="History" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v2 && !x.IsCurrent))>
                                             <MudSimpleTable Style="overflow-x: auto;" Dense="true" Hover="true" Striped="true">

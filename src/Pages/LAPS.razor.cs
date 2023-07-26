@@ -134,6 +134,13 @@ namespace LAPS_WebUI.Pages
                 {
                     selectedComputer.LAPSInformations = AdComputerObject.LAPSInformations;
                     selectedComputer.FailedToRetrieveLAPSDetails = AdComputerObject.FailedToRetrieveLAPSDetails;
+
+                    if (!selectedComputer.FailedToRetrieveLAPSDetails && _tabs != null)
+                    {
+                        await InvokeAsync(StateHasChanged);
+                        _tabs.ActivatePanel(_tabs.Panels.First(x => !x.Disabled));
+                    }
+
                 }
             }
             catch (Exception ex)
