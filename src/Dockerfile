@@ -27,4 +27,5 @@ RUN apt update && \
     ln -s /usr/lib/x86_64-linux-gnu/liblber-2.4.so.2 /usr/lib/liblber.so.2 && \
     pip3 install dpapi-ng[kerberos]
 COPY --from=publish /app/publish .
+HEALTHCHECK CMD curl --fail http://localhost/healthz || exit
 ENTRYPOINT ["dotnet", "LAPS-WebUI.dll"]

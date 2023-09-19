@@ -12,17 +12,14 @@
                 <MudTextField Label="Username" Immediate="true" @bind-Value="_loginRequest.Username" For="@(() => _loginRequest.Username)" aria-label="username"/>
                 <MudTextField Label="Password" Immediate="true" Class="mt-3" @bind-Value="_loginRequest.Password" For="@(() => _loginRequest.Password)" InputType="InputType.Password" aria-label="password"/>
             </MudStack>
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="@_processing" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Login" aria-label="login">
-                @if (_processing)
-                {
-                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
-                    <MudText Class="ms-2">Logging you in...</MudText>
-                }
-                else
-                {
-                    <MudText>Log in</MudText>
-                }
-            </MudButton>
+                <MudLoadingButton @bind-Loading="_processing" LoadingAdornment="Adornment.Start" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Login" aria-label="login">
+                    <ChildContent>
+                        Login
+                    </ChildContent>
+                    <LoadingContent>
+                        Logging in...
+                    </LoadingContent>
+                </MudLoadingButton>
         </MudStack>
     </MudPaper>
 

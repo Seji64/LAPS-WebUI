@@ -11,15 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazored.SessionStorage" Version="2.3.0" />
+    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="CliWrap" Version="3.6.4" />
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="6.5.10" />
     <PackageReference Include="CurrieTechnologies.Razor.Clipboard" Version="1.6.0" />
     <PackageReference Include="LdapForNet" Version="2.7.15" />
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="7.0.9" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="7.0.11" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
-    <PackageReference Include="MudBlazor" Version="6.7.0" />
+    <PackageReference Include="MudBlazor" Version="6.10.0" />
     <PackageReference Include="Serilog" Version="3.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />

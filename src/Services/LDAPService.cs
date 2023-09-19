@@ -108,6 +108,7 @@ namespace LAPS_WebUI.Services
                     {
                         LapsInformation lapsInformationEntry = new()
                         {
+                            ComputerName = ADComputer.Name,
                             Version = Enums.LAPSVersion.v1,
                             Account = null,
                             Password = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First().ToString(),
@@ -144,6 +145,7 @@ namespace LAPS_WebUI.Services
 
                         LapsInformation lapsInformationEntry = new()
                         {
+                            ComputerName = ADComputer.Name,
                             Version = Enums.LAPSVersion.v2,
                             Account = msLAPS_Payload.ManagedAccountName,
                             Password = msLAPS_Payload.Password,
@@ -168,6 +170,7 @@ namespace LAPS_WebUI.Services
                                 {
                                     LapsInformation historicLapsInformationEntry = new()
                                     {
+                                        ComputerName = ADComputer.Name,
                                         Version = Enums.LAPSVersion.v2,
                                         Account = historic_msLAPS_Payload.ManagedAccountName,
                                         Password = historic_msLAPS_Payload.Password,
