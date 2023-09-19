@@ -25,6 +25,7 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddClipboard();
 builder.Services.AddDataProtection();
+builder.Services.AddHealthChecks();
 
 builder.Services.Configure<LdapOptions>(builder.Configuration.GetSection("LDAP"));
 builder.Services.Configure<LapsOptions>(builder.Configuration.GetSection("LAPS"));
@@ -50,5 +51,6 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+app.MapHealthChecks("/healthz");
 
 app.Run();

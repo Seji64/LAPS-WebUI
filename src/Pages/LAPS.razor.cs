@@ -5,18 +5,11 @@ namespace LAPS_WebUI.Pages
 {
     public partial class LAPS
     {
-        private bool IsCopyToClipboardSupported { get; set; }
-
+        private readonly Dictionary<string, MudTabs?> MudTabsDict = new();
+        private MudAutocomplete<ADComputer>? AutoCompleteSearchBox;
         private bool Authenticated { get; set; } = true;
-
         private LdapForNet.LdapCredential? LdapCredential { get; set; }
-
         private List<ADComputer> SelectedComputers { get; set; } = new List<ADComputer>();
-
-        private MudTabs? _tabs;
-
-        readonly Func<ADComputer, string> _ADComputerToStringConverter = p => (p is null ? string.Empty : p.Name);
-
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             Authenticated = await sessionManager.IsUserLoggedInAsync();
@@ -26,14 +19,9 @@ namespace LAPS_WebUI.Pages
                 NavigationManager.NavigateTo("/login");
             }
 
-            if (firstRender)
+            if (firstRender && Authenticated)
             {
-                if (Authenticated)
-                {
-                    LdapCredential = await sessionManager.GetLdapCredentialsAsync();
-                }
-
-                IsCopyToClipboardSupported = await clipboard.IsSupportedAsync();
+                LdapCredential = await sessionManager.GetLdapCredentialsAsync();
             }
 
             await InvokeAsync(StateHasChanged);
@@ -43,40 +31,11 @@ namespace LAPS_WebUI.Pages
         {
             if (value != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
             {
+                AutoCompleteSearchBox?.Clear();
+                MudTabsDict.Add(value.Name, null);
                 await FetchComputerDetailsAsync(value.Name);
             }
         }
-
-        private async Task CopyLAPSPasswordToClipboardAsync(ADComputer computer)
-        {
-            string password = string.Empty;
-
-            if (_tabs != null && _tabs.ActivePanel != null)
-            {
-                if (_tabs.ActivePanel.ID.ToString() == "v1") // aka LAPS v1
-                {
-                    password = computer.LAPSInformations!.Single(x => x.IsCurrent && x.Version == Enums.LAPSVersion.v1).Password!;
-                }
-                if (_tabs.ActivePanel.ID.ToString() == "v2") // aka LAPS v2
-                {
-                    password = computer.LAPSInformations!.Single(x => x.IsCurrent && x.Version == Enums.LAPSVersion.v2).Password!;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(password))
-            {
-                await clipboard.WriteTextAsync(password);
-                Snackbar.Add("Copied password to clipboard!", Severity.Success);
-            }
-            else
-            {
-                Snackbar.Add("Failed to copy password to clipboard!", Severity.Error);
-            }
-
-
-
-        }
-
         private async Task RefreshComputerDetailsAsync(string computerName)
         {
 
@@ -135,10 +94,12 @@ namespace LAPS_WebUI.Pages
                     selectedComputer.LAPSInformations = AdComputerObject.LAPSInformations;
                     selectedComputer.FailedToRetrieveLAPSDetails = AdComputerObject.FailedToRetrieveLAPSDetails;
 
-                    if (!selectedComputer.FailedToRetrieveLAPSDetails && _tabs != null)
+                    MudTabsDict.TryGetValue(computerName, out MudTabs? _tab);
+
+                    if (!selectedComputer.FailedToRetrieveLAPSDetails && _tab != null)
                     {
                         await InvokeAsync(StateHasChanged);
-                        _tabs.ActivatePanel(_tabs.Panels.First(x => !x.Disabled));
+                        _tab.ActivatePanel(_tab.Panels.First(x => !x.Disabled));
                     }
 
                 }
@@ -164,7 +125,7 @@ namespace LAPS_WebUI.Pages
                 return new List<ADComputer>();
             }
 
-            var tmp = (await LDAPService.SearchADComputersAsync(LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value));
+            var tmp = await LDAPService.SearchADComputersAsync(LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value);
 
             if (tmp != null)
             {

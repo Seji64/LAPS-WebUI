@@ -3,10 +3,8 @@
 @inject NavigationManager NavigationManager
 @inject ILdapService LDAPService
 @inject ISnackbar Snackbar
-@inject ClipboardService clipboard
-@using CurrieTechnologies.Razor.Clipboard
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-5">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-5">
 
     @if (!Authenticated)
     {
@@ -14,9 +12,9 @@
     }
     else
     {
-        <MudAutocomplete Label="Search by Computername" HelperTextOnFocus="true" HelperText="Minimum query length is 4. Wildcard (*) is supported" ShowProgressIndicator="true"
-            MaxItems=null ValueChanged="@(async (ADComputer a) => OnSelectedItemChangedAsync(a).AndForget())" MinCharacters="4" SearchFunc="@SearchAsync" ToStringFunc="@_ADComputerToStringConverter" Immediate="true" ResetValueOnEmptyText="true"
-            AdornmentIcon="@Icons.Material.Outlined.Search" AdornmentColor="Color.Default" Adornment="Adornment.Start" SelectValueOnTab=true Clearable=true aria-label="Search Computer" >
+        <MudAutocomplete Label="Search by Computername" HelperTextOnFocus="true" HelperText="Minimum query length is 4. Wildcard (*) is supported" Variant="Variant.Outlined" ShowProgressIndicator="true" AutoFocus="true" Immediate="true" ResetValueOnEmptyText="true" @ref="AutoCompleteSearchBox"
+                         MaxItems=null ValueChanged="@(async (ADComputer a) => OnSelectedItemChangedAsync(a).AndForget())" MinCharacters="4" MaxLength="15" SearchFunc="@SearchAsync" ToStringFunc="@(x => (x is null ? string.Empty : x.Name))"  
+            AdornmentIcon="@Icons.Material.Outlined.Search" AdornmentColor="Color.Default" Adornment="Adornment.Start" SelectOnClick="true" SelectValueOnTab=true Clearable=true aria-label="Search Computer" >
                 <ItemTemplate Context="e">
                     <MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Computer" Class="mb-n1 mr-3" aria-label=@($"{e.Name}")/>@($"{e.Name}")
@@ -27,20 +25,31 @@
                         <MudIcon Icon="@Icons.Material.Filled.Computer" Class="mb-n1 mr-3" aria-label=@($"{e.Name}")/>@($"{e.Name}")
                     </MudText>
                 </ItemSelectedTemplate>
+                <MoreItemsTemplate>
+                    <AutoCompleteMoreItemsFound/>
+                </MoreItemsTemplate>
+                <NoItemsTemplate>
+                    <AutoCompleteNoItemsFound />
+                </NoItemsTemplate>
             </MudAutocomplete>
 
         <MudGrid Class="mt-8" Justify="Justify.SpaceEvenly">
 
             @foreach(var computer in SelectedComputers)
             {
-                <MudItem xs="10" sm="8">
+                <MudItem xs="10" lg="6">
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h5">@computer.Name</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
-                               <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close" Disabled=@(computer.Loading)/>
+                                <MudStack Row="true" Spacing="0">
+                                    <MudTooltip Text="Refresh">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="@(async e => await RefreshComputerDetailsAsync(computer.Name))" aria-label="refresh" Disabled=@(computer.Loading) />
+                                    </MudTooltip>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close" Disabled=@(computer.Loading) />
+                                </MudStack>
                             </CardHeaderActions>       
                         </MudCardHeader>
                         <MudCardContent>
@@ -48,7 +57,7 @@
                             {
                                 @if(!computer.FailedToRetrieveLAPSDetails)
                                 {
-                                    <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" @ref="_tabs" PanelClass="pa-4">
+                                    <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" PanelClass="pa-4" @key="computer.Name" @ref="MudTabsDict[computer.Name]">
                                         <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LAPSInformations!.Any(x => x.Version == Enums.LAPSVersion.v1 && x.IsCurrent))>
                                             <LapsInformationDetail LapsInfo="computer.LAPSInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)" />
                                         </MudTabPanel>
@@ -98,14 +107,6 @@
                                 </div>
                             }
                         </MudCardContent>
-                        <MudCardActions>
-                            <MudTooltip Text="@(IsCopyToClipboardSupported ? "Copy Password to clipboard" : "Your browser does not support Clipboard API - please use STRG+C")">
-                                <MudIconButton Disabled="@(!IsCopyToClipboardSupported || (_tabs != null && _tabs.ActivePanel != null && _tabs.ActivePanel.ID.ToString() == "history"))" Icon="@Icons.Material.Filled.FileCopy" Color="Color.Tertiary" OnClick="@(async e => await CopyLAPSPasswordToClipboardAsync(computer))" aria-label="Copy Password to clipbard"/>
-                            </MudTooltip>
-                            <MudTooltip Text="Refresh">
-                                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Tertiary" OnClick="@(async e => await RefreshComputerDetailsAsync(computer.Name))" aria-label="refresh"/>
-                            </MudTooltip>
-                        </MudCardActions>
                     </MudCard>
                 </MudItem>
             }

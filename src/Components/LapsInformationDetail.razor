@@ -1,16 +1,31 @@
 ﻿@inherits MudComponentBase
+@inject ISnackbar Snackbar
+@inject ClipboardService clipboard
+@using CurrieTechnologies.Razor.Clipboard
+
 @if (LapsInfo != null)
 {
     <MudStack Spacing="2">
-        <MudField Label="Password" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password">@LapsInfo.Password</MudField>
+
+        <MudTextFieldExtended T="string" Label="Password" Variant="Variant.Text" InputMode="InputMode.none" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password" Text="@LapsInfo.Password" ReadOnly="true">
+            <AdornmentStart>
+                <MudIcon Icon="@Icons.Material.Outlined.Password" />
+            </AdornmentStart>
+            <AdornmentEnd>
+                <MudTooltip Text="@(IsCopyToClipboardSupported ? "Copy Password to clipboard" : "Your browser does not support Clipboard API - please use STRG+C")">
+                    <MudIconButton Class="mb-1" Disabled="@(IsCopyButtonDisabled())" Icon="@Icons.Material.Outlined.ContentCopy" Color="Color.Primary" OnClick="@(async (_) => await CopyLAPSPasswordToClipboardAsync())" aria-label="Copy Password to clipbard" />
+                </MudTooltip>
+                
+            </AdornmentEnd>
+        </MudTextFieldExtended>
         @if (LapsInfo.Account != null)
         {
-            <MudField Label="Account" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.AccountCircle" AdornmentColor="Color.Default" aria-label="LAPS Managed Account">@LapsInfo.Account</MudField>
+            <MudTextField T="string" ReadOnly="true" Label="Account" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.AccountCircle" AdornmentColor="Color.Default" aria-label="LAPS Managed Account" Text="@LapsInfo.Account"/>
         }
         @if (LapsInfo.PasswordSetDate != null)
         {
-            <MudField Label="Set Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.MoreTime" AdornmentColor="Color.Default" aria-label="LAPS Password Set Date">@LapsInfo.PasswordSetDate</MudField>
+            <MudTextField T="string" ReadOnly="true" Label="Set Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.MoreTime" AdornmentColor="Color.Default" aria-label="LAPS Password Set Date" Text="@LapsInfo.PasswordSetDate.ToString()"/>
         }
-        <MudField Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date">@LapsInfo.PasswordExpireDate</MudField>
+        <MudTextField T="string" ReadOnly="true" Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date" Text="@LapsInfo.PasswordExpireDate.ToString()"/>
     </MudStack>
 }
