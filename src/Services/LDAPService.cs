@@ -217,7 +217,7 @@ namespace LAPS_WebUI.Services
             string pythonBin = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "python" : "python3";
 
             var pythonCmd = Cli.Wrap(pythonBin)
-                            .WithArguments($"\"{pythonDecryptScriptPath}\" --user {ldapCredential.UserName} --password {ldapCredential.Password} --data {Convert.ToBase64String(value)})")
+                            .WithArguments($"\"{pythonDecryptScriptPath}\" --user \"{ldapCredential.UserName}\" --password \"{ldapCredential.Password}\" --data \"{Convert.ToBase64String(value)}\"")
                             .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult));
 
             await pythonCmd.ExecuteAsync();
