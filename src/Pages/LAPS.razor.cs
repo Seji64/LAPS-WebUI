@@ -94,6 +94,7 @@ namespace LAPS_WebUI.Pages
                     selectedComputer.LAPSInformations = AdComputerObject.LAPSInformations;
                     selectedComputer.FailedToRetrieveLAPSDetails = AdComputerObject.FailedToRetrieveLAPSDetails;
 
+                    await InvokeAsync(StateHasChanged);
                     MudTabsDict.TryGetValue(computerName, out MudTabs? _tab);
 
                     if (!selectedComputer.FailedToRetrieveLAPSDetails && _tab != null)
