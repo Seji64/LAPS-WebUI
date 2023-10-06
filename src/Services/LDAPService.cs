@@ -93,7 +93,7 @@ namespace LAPS_WebUI.Services
 
                 string? defaultNamingContext = _ldapOptions.Value.SearchBase;
 
-                var ldapSearchResult = (await ldapConnection.SearchByCnAsync(defaultNamingContext, name, Native.LdapSearchScope.LDAP_SCOPE_SUB)).FirstOrDefault();
+                var ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(name={name}))",null, Native.LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
 
                 if (ldapSearchResult != null)
                 {
@@ -211,26 +211,37 @@ namespace LAPS_WebUI.Services
 
         private static async Task<string> DecryptLAPSPayload(byte[] value, LdapCredential ldapCredential)
         {
+
             StringBuilder pythonScriptResult = new();
             string pythonDecryptScriptPath = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "scripts", "DecryptEncryptedLAPSPassword.py");
 
             string pythonBin = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "python" : "python3";
 
-            var pythonCmd = Cli.Wrap(pythonBin)
-                            .WithArguments($"\"{pythonDecryptScriptPath}\" --user \"{ldapCredential.UserName}\" --password \"{ldapCredential.Password}\" --data \"{Convert.ToBase64String(value)}\"")
-                            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult));
-
-            await pythonCmd.ExecuteAsync();
-
-            if (pythonDecryptScriptPath is null || pythonDecryptScriptPath.Length == 0)
+            try
             {
-                throw new Exception("Failed to decrypt laps password!");
+
+                var pythonCmd = Cli.Wrap(pythonBin)
+                                .WithArguments($"\"{pythonDecryptScriptPath}\" --user \"{ldapCredential.UserName}\" --password \"{ldapCredential.Password}\" --data \"{Convert.ToBase64String(value)}\"")
+                                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult));
+
+                await pythonCmd.ExecuteAsync();
+
+                if (pythonDecryptScriptPath is null || pythonDecryptScriptPath.Length == 0)
+                {
+                    throw new Exception("Failed to decrypt laps password!");
+                }
+
+                string ldapValue = pythonScriptResult.ToString().Trim();
+                ldapValue = ldapValue.Remove(ldapValue.LastIndexOf("}") + 1);
+
+                return ldapValue;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Decrypt LAPS Password failed => {ErrorMessage}", ex.Message);
+                throw new ArgumentException("Failed to decrypt LAPSv2 Password");
             }
 
-            string ldapValue = pythonScriptResult.ToString().Trim();
-            ldapValue = ldapValue.Remove(ldapValue.LastIndexOf("}") + 1);
-
-            return ldapValue;
         }
 
         public async Task<List<ADComputer>> SearchADComputersAsync(LdapCredential ldapCredential, string query)
