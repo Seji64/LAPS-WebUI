@@ -6,10 +6,14 @@ using LAPS_WebUI.Services;
 using MudBlazor;
 using MudBlazor.Services;
 using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, lc) => lc
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
     .WriteTo.Console());
 
 // Add services to the container.
@@ -44,13 +48,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.MapHealthChecks("/healthz");
 
+app.UseSerilogRequestLogging();
 app.Run();
