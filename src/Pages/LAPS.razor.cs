@@ -114,6 +114,7 @@ namespace LAPS_WebUI.Pages
 
         private void RemoveComputerCard(string computerName)
         {
+            MudTabsDict.Remove(computerName);
             SelectedComputers.RemoveAll(x => x.Name == computerName);
         }
 
