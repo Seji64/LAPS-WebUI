@@ -39,7 +39,7 @@ docker run -d \
   -e LDAP__SearchBase=DC=example,DC=com \
   -p 8080:8080 \
   --restart unless-stopped \
-  ghcr.io/seji64/laps-webui:1.5.5
+  ghcr.io/seji64/laps-webui:1.5.7
 ```
 
 ### Reverse Proxy
