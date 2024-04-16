@@ -9,9 +9,9 @@
     <MudPaper Class="pa-4">
         <MudStack Spacing="4">
             <MudStack>
-                <MudTextField Label="Username" Immediate="true" @bind-Value="_loginRequest.Username" For="@(() => _loginRequest.Username)" aria-label="username"/>
-                <MudTextField Label="Password" Immediate="true" Class="mt-3" @bind-Value="_loginRequest.Password" For="@(() => _loginRequest.Password)" InputType="InputType.Password" aria-label="password"/>
-                <MudSelect T="string" Label="Domain" aria-label="domain" @bind-Value="_loginRequest.DomainName" >
+                <MudTextField Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" Label="Username" Immediate="true" @bind-Value="_loginRequest.Username" For="@(() => _loginRequest.Username)" aria-label="username"/>
+                <MudTextField Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Key" Label="Password" Immediate="true" Class="mt-3" @bind-Value="_loginRequest.Password" For="@(() => _loginRequest.Password)" InputType="InputType.Password" aria-label="password" />
+                <MudSelect Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Domain" T="string" Label="Domain" aria-label="domain" @bind-Value="_loginRequest.DomainName">
                     @foreach(var domain in _domains)
                     {
                         <MudSelectItem Value="@domain" />
