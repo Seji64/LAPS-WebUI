@@ -99,7 +99,7 @@ namespace LAPS_WebUI.Services
                 {
                     ADComputer = new ADComputer(ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First())
                     {
-                        LAPSInformations = new()
+                        LAPSInformations = []
                     };
 
                     #region "Try LAPS v1"
@@ -190,13 +190,13 @@ namespace LAPS_WebUI.Services
 
                     #endregion
 
-                    if (ADComputer.LAPSInformations is null || !ADComputer.LAPSInformations.Any())
+                    if (ADComputer.LAPSInformations is null || ADComputer.LAPSInformations.Count == 0)
                     {
                         ADComputer.FailedToRetrieveLAPSDetails = true;
                     }
                     else
                     {
-                        ADComputer.LAPSInformations = ADComputer.LAPSInformations.OrderBy(x => x.PasswordExpireDate).ToList();
+                        ADComputer.LAPSInformations = [.. ADComputer.LAPSInformations.OrderBy(x => x.PasswordExpireDate)];
                     }
      
                 }
@@ -232,7 +232,7 @@ namespace LAPS_WebUI.Services
                 }
 
                 string ldapValue = pythonScriptResult.ToString().Trim();
-                ldapValue = ldapValue.Remove(ldapValue.LastIndexOf("}") + 1);
+                ldapValue = ldapValue.Remove(ldapValue.LastIndexOf('}') + 1);
 
                 return ldapValue;
             }
@@ -246,7 +246,7 @@ namespace LAPS_WebUI.Services
 
         public async Task<List<ADComputer>> SearchADComputersAsync(LdapCredential ldapCredential, string query)
         {
-            List<ADComputer> result = new();
+            List<ADComputer> result = [];
 
             if (ldapCredential is null)
             {

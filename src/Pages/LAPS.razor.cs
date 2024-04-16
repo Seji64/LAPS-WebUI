@@ -5,11 +5,11 @@ namespace LAPS_WebUI.Pages
 {
     public partial class LAPS
     {
-        private readonly Dictionary<string, MudTabs?> MudTabsDict = new();
+        private readonly Dictionary<string, MudTabs?> MudTabsDict = [];
         private MudAutocomplete<ADComputer>? AutoCompleteSearchBox;
         private bool Authenticated { get; set; } = true;
         private LdapForNet.LdapCredential? LdapCredential { get; set; }
-        private List<ADComputer> SelectedComputers { get; set; } = new List<ADComputer>();
+        private List<ADComputer> SelectedComputers { get; set; } = [];
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             Authenticated = await sessionManager.IsUserLoggedInAsync();
@@ -40,7 +40,7 @@ namespace LAPS_WebUI.Pages
         {
 
             ADComputer? placeHolder = null;
-            List<LapsInformation> backup = new();
+            List<LapsInformation> backup = [];
 
             try
             {
@@ -120,11 +120,11 @@ namespace LAPS_WebUI.Pages
 
         private async Task<IEnumerable<ADComputer>> SearchAsync(string value)
         {
-            List<ADComputer> searchResult = new();
+            List<ADComputer> searchResult = [];
 
             if (string.IsNullOrEmpty(value))
             {
-                return new List<ADComputer>();
+                return [];
             }
 
             var tmp = await LDAPService.SearchADComputersAsync(LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value);
