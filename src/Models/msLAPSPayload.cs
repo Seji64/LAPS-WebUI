@@ -2,7 +2,7 @@
 
 namespace LAPS_WebUI.Models
 {
-    public class MsLAPSPayload
+    public class MsLapsPayload
     {
         [JsonPropertyName("n")]
         public string? ManagedAccountName { get; set; }

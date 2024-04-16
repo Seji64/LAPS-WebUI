@@ -31,8 +31,7 @@ builder.Services.AddClipboard();
 builder.Services.AddDataProtection();
 builder.Services.AddHealthChecks();
 
-builder.Services.Configure<LdapOptions>(builder.Configuration.GetSection("LDAP"));
-builder.Services.Configure<LapsOptions>(builder.Configuration.GetSection("LAPS"));
+builder.Services.Configure<List<Domain>>(builder.Configuration.GetSection("Domains"));
 builder.Services.AddScoped<ILdapService, LdapService>();
 builder.Services.AddScoped<ISessionManagerService, SessionManagerService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();

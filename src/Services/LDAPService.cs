@@ -13,24 +13,34 @@ namespace LAPS_WebUI.Services
 {
     public class LdapService : ILdapService
     {
-        private readonly IOptions<LdapOptions> _ldapOptions;
-        private readonly IOptions<LapsOptions> _lapsOptions;
-        public LdapService(IOptions<LdapOptions> ldapoptions, IOptions<LapsOptions> lapsOptions)
+        private readonly IOptions<List<Domain>> _Domains;
+        public LdapService(IOptions<List<Domain>> domains)
         {
-            _ldapOptions = ldapoptions;
-            _lapsOptions = lapsOptions;
+            _Domains = domains;
+
+            if (_Domains.Value is null || _Domains.Value.Count == 0)
+            {
+                Log.Error("No Domains configured! Please check your configuration!");
+            }
         }
 
-        public async Task<LdapConnection?> CreateBindAsync(string username, string password)
+        public async Task<List<Domain>> GetDomainsAsync()
+        {
+            return await Task.FromResult(_Domains.Value);
+        }
+
+        public async Task<LdapConnection?> CreateBindAsync(string domainName, string username, string password)
         {
             LdapConnection ldapConnection;
             ldapConnection = new LdapConnection();
 
             try
             {
-                ldapConnection.Connect(_ldapOptions.Value.Server, _ldapOptions.Value.Port, _ldapOptions.Value.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
+                Domain domain = _Domains.Value.Single(x => x.Name == domainName);
 
-                if (_ldapOptions.Value.TrustAllCertificates)
+                ldapConnection.Connect(domain.Ldap.Server, domain.Ldap.Port, domain.Ldap.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
+
+                if (domain.Ldap.TrustAllCertificates)
                 {
                     ldapConnection.TrustAllCertificates();
                 }
@@ -49,9 +59,9 @@ namespace LAPS_WebUI.Services
             return ldapConnection;
         }
 
-        public async Task<bool> TestCredentialsAsync(string username, string password)
+        public async Task<bool> TestCredentialsAsync(string domainName, string username, string password)
         {
-            using var connection = await CreateBindAsync(username, password);
+            using var connection = await CreateBindAsync(domainName, username, password);
             if (connection != null)
             {
                 return true;
@@ -62,9 +72,9 @@ namespace LAPS_WebUI.Services
             }
         }
 
-        public async Task<bool> TestCredentialsAsync(LdapCredential ldapCredential)
+        public async Task<bool> TestCredentialsAsync(string domainName, LdapCredential ldapCredential)
         {
-            using var connection = await CreateBindAsync(ldapCredential.UserName, ldapCredential.Password);
+            using var connection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password);
             if (connection != null)
             {
                 return true;
@@ -75,23 +85,24 @@ namespace LAPS_WebUI.Services
             }
         }
 
-        public async Task<ADComputer?> GetADComputerAsync(LdapCredential ldapCredential, string name)
+        public async Task<ADComputer?> GetADComputerAsync(string domainName, LdapCredential ldapCredential, string name)
         {
             ADComputer? ADComputer = null;
+            Domain? domain = _Domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
             if (ldapCredential is null)
             {
                 throw new Exception("Failed to get LDAP Credentials");
             }
 
-            using (LdapConnection? ldapConnection = await CreateBindAsync(ldapCredential.UserName, ldapCredential.Password))
+            using (LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password))
             {
                 if (ldapConnection is null)
                 {
                     throw new Exception("LDAP bind failed!");
                 }
 
-                string? defaultNamingContext = _ldapOptions.Value.SearchBase;
+                string? defaultNamingContext = domain.Ldap.SearchBase;
 
                 var ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(name={name}))",null, Native.LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
 
@@ -104,7 +115,7 @@ namespace LAPS_WebUI.Services
 
                     #region "Try LAPS v1"
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (_lapsOptions.Value.ForceVersion == Enums.LAPSVersion.All || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v1))
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (domain.Laps.ForceVersion == Enums.LAPSVersion.All || domain.Laps.ForceVersion == Enums.LAPSVersion.v1))
                     {
                         LapsInformation lapsInformationEntry = new()
                         {
@@ -124,14 +135,14 @@ namespace LAPS_WebUI.Services
 
                     #region "Try LAPS v2"
 
-                    string fieldName = (_lapsOptions.Value.EncryptionDisabled ? "msLAPS-Password" : "msLAPS-EncryptedPassword");
+                    string fieldName = (domain.Laps.EncryptionDisabled ? "msLAPS-Password" : "msLAPS-EncryptedPassword");
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (_lapsOptions.Value.ForceVersion == Enums.LAPSVersion.All || _lapsOptions.Value.ForceVersion == Enums.LAPSVersion.v2))
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (domain.Laps.ForceVersion == Enums.LAPSVersion.All || domain.Laps.ForceVersion == Enums.LAPSVersion.v2))
                     {
-                        MsLAPSPayload? msLAPS_Payload = null;
+                        MsLapsPayload? msLAPS_Payload = null;
                         string ldapValue = string.Empty;
 
-                        if (_lapsOptions.Value.EncryptionDisabled)
+                        if (domain.Laps.EncryptionDisabled)
                         {
                             ldapValue = ldapSearchResult.DirectoryAttributes["msLAPS-Password"].GetValues<string>().First().ToString();
                         }
@@ -141,7 +152,7 @@ namespace LAPS_WebUI.Services
                             ldapValue = await DecryptLAPSPayload(encryptedPass, ldapCredential);
                         }
 
-                        msLAPS_Payload = JsonSerializer.Deserialize<MsLAPSPayload>(ldapValue) ?? throw new Exception("Failed to parse LAPS Password");
+                        msLAPS_Payload = JsonSerializer.Deserialize<MsLapsPayload>(ldapValue) ?? throw new Exception("Failed to parse LAPS Password");
 
                         LapsInformation lapsInformationEntry = new()
                         {
@@ -164,7 +175,7 @@ namespace LAPS_WebUI.Services
                             {
                                 byte[] historicEncryptedPass = historyEntry.Skip(16).ToArray();
                                 string historicLdapValue = await DecryptLAPSPayload(historicEncryptedPass, ldapCredential);
-                                var historic_msLAPS_Payload = JsonSerializer.Deserialize<MsLAPSPayload>(historicLdapValue);
+                                var historic_msLAPS_Payload = JsonSerializer.Deserialize<MsLapsPayload>(historicLdapValue);
 
                                 if (historic_msLAPS_Payload != null)
                                 {
@@ -244,20 +255,21 @@ namespace LAPS_WebUI.Services
 
         }
 
-        public async Task<List<ADComputer>> SearchADComputersAsync(LdapCredential ldapCredential, string query)
+        public async Task<List<ADComputer>> SearchADComputersAsync(string domainName, LdapCredential ldapCredential, string query)
         {
             List<ADComputer> result = [];
+            Domain? domain = _Domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
             if (ldapCredential is null)
             {
                 throw new Exception("Failed to get LDAP Credentials");
             }
 
-            using (LdapConnection? ldapConnection = await CreateBindAsync(ldapCredential.UserName, ldapCredential.Password))
+            using (LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password))
             {
                 string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
                 var PropertiesToLoad = new string[] { "cn" };
-                string? defaultNamingContext = _ldapOptions.Value.SearchBase;
+                string? defaultNamingContext = domain.Ldap.SearchBase;
 
                 try
                 {

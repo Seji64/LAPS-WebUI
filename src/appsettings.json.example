@@ -1,0 +1,40 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "Domains": [
+    {
+      "Name": "example.com",
+      "Ldap": {
+        "Server": "ldap.example.com",
+        "Port": 636,
+        "UseSSL": true,
+        "TrustAllCertificates": true,
+        "SearchBase": "OU=Clients,DC=example,DC=com"
+      },
+      "Laps": {
+        "ForceVersion": "All", // Allowed Values: All, v1, v2 | Default: All (v1 & v2)
+        "EncryptionDisabled": false // Allowed Values: true, false | Default: false
+      }
+    },
+    {
+      "Name": "contoso.com",
+      "Ldap": {
+        "Server": "ldap.contoso.com",
+        "Port": 636,
+        "UseSSL": true,
+        "TrustAllCertificates": true,
+        "SearchBase": "OU=Clients,DC=contoso,DC=com"
+      },
+      "Laps": {
+        "ForceVersion": "All", // Allowed Values: All, v1, v2 | Default: All (v1 & v2)
+        "EncryptionDisabled": false // Allowed Values: true, false | Default: false
+      }
+    }
+  ],
+  "AllowedHosts": "*"
+}

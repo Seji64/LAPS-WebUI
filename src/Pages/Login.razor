@@ -11,6 +11,12 @@
             <MudStack>
                 <MudTextField Label="Username" Immediate="true" @bind-Value="_loginRequest.Username" For="@(() => _loginRequest.Username)" aria-label="username"/>
                 <MudTextField Label="Password" Immediate="true" Class="mt-3" @bind-Value="_loginRequest.Password" For="@(() => _loginRequest.Password)" InputType="InputType.Password" aria-label="password"/>
+                <MudSelect T="string" Label="Domain" aria-label="domain" @bind-Value="_loginRequest.DomainName" >
+                    @foreach(var domain in _domains)
+                    {
+                        <MudSelectItem Value="@domain" />
+                    }
+                </MudSelect>
             </MudStack>
                 <MudLoadingButton @bind-Loading="_processing" LoadingAdornment="Adornment.Start" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Login" aria-label="login">
                     <ChildContent>

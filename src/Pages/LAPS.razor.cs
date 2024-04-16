@@ -10,6 +10,7 @@ namespace LAPS_WebUI.Pages
         private bool Authenticated { get; set; } = true;
         private LdapForNet.LdapCredential? LdapCredential { get; set; }
         private List<ADComputer> SelectedComputers { get; set; } = [];
+        private string? DomainName { get; set; }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             Authenticated = await sessionManager.IsUserLoggedInAsync();
@@ -22,6 +23,7 @@ namespace LAPS_WebUI.Pages
             if (firstRender && Authenticated)
             {
                 LdapCredential = await sessionManager.GetLdapCredentialsAsync();
+                DomainName = await sessionManager.GetDomainAsync();
             }
 
             await InvokeAsync(StateHasChanged);
@@ -54,7 +56,7 @@ namespace LAPS_WebUI.Pages
                 placeHolder.LAPSInformations = null;
                 await InvokeAsync(StateHasChanged);
 
-                var tmp = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
+                var tmp = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computerName);
 
                 if (tmp != null)
                 {
@@ -86,7 +88,7 @@ namespace LAPS_WebUI.Pages
                 SelectedComputers.Add(placeHolder);
                 await InvokeAsync(StateHasChanged);
 
-                var AdComputerObject = await LDAPService.GetADComputerAsync(await sessionManager.GetLdapCredentialsAsync(), computerName);
+                var AdComputerObject = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computerName);
                 var selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
 
                 if (AdComputerObject != null && selectedComputer != null)
@@ -127,7 +129,7 @@ namespace LAPS_WebUI.Pages
                 return [];
             }
 
-            var tmp = await LDAPService.SearchADComputersAsync(LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value);
+            var tmp = await LDAPService.SearchADComputersAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value);
 
             if (tmp != null)
             {
