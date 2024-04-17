@@ -52,7 +52,6 @@ namespace LAPS_WebUI.Pages
                 if (_tab != null && computer.LAPSInformations != null)
                 {
                     LAPSVersion version = LAPSVersion.v1;
-                    bool encrypted = false;
 
                     if (_tab.ActivePanel.ID.ToString() == "v1")
                     {
@@ -62,7 +61,6 @@ namespace LAPS_WebUI.Pages
                     if (_tab.ActivePanel.ID.ToString() == "v2")
                     {
                         version = LAPSVersion.v2;
-                        encrypted = computer.LAPSInformations.Single(x => x.Version == LAPSVersion.v2 && x.IsCurrent).WasEncrypted;
                     }
                     var parameters = new DialogParameters { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
                     IDialogReference dialog = Dialog.Show<Confirmation>("Clear LAPS Password", parameters,new DialogOptions() { NoHeader = true });
@@ -72,7 +70,7 @@ namespace LAPS_WebUI.Pages
                     {
                         computer.LAPSInformations.Clear();
                         await InvokeAsync(StateHasChanged);
-                        await LDAPService.ClearLapsPassword(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version, encrypted);
+                        await LDAPService.ClearLapsPassword(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version);
                         Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke gpupdate on {computer.Name} to set a new LAPS Password", Severity.Success);
                     }
                 }

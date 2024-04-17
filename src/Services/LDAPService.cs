@@ -3,12 +3,9 @@ using LAPS_WebUI.Enums;
 using LAPS_WebUI.Interfaces;
 using LAPS_WebUI.Models;
 using LdapForNet;
-using LdapForNet.Native;
 using Microsoft.Extensions.Options;
 using Serilog;
-using System;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using static LdapForNet.Native.Native;
@@ -89,9 +86,8 @@ namespace LAPS_WebUI.Services
             }
         }
 
-        public async Task<bool> ClearLapsPassword(string domainName, LdapCredential ldapCredential, string distinguishedName, LAPSVersion version, bool encrypted)
+        public async Task<bool> ClearLapsPassword(string domainName, LdapCredential ldapCredential, string distinguishedName, LAPSVersion version)
         {
-            Domain? domain = _Domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
             if (ldapCredential is null)
             {
@@ -99,48 +95,29 @@ namespace LAPS_WebUI.Services
             }
             using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password) ?? throw new Exception("LDAP bind failed!");
 
-            string? defaultNamingContext = domain.Ldap.SearchBase;
             string attribute = string.Empty;
 
             if (version == LAPSVersion.v1)
             {
-                attribute = "ms-Mcs-AdmPwd";
+                attribute = "ms-Mcs-AdmPwdExpirationTime";
             }
 
             if (version == LAPSVersion.v2)
             {
-                attribute = encrypted ? "msLAPS-EncryptedPassword" : "msLAPS-Password";
+                attribute = "msLAPS-PasswordExpirationTime";
             }
 
-            var ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(distinguishedName={distinguishedName}))", [attribute], LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
-
-            if (ldapSearchResult != null)
+            var resetRequest = new DirectoryModificationAttribute
             {
-                var resetRequest = new DirectoryModificationAttribute
-                {
-                    LdapModOperation = LdapModOperation.LDAP_MOD_DELETE,
-                    Name = attribute
-                };
+                LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                Name = attribute
+            };
 
-                if (version == LAPSVersion.v1 || !encrypted)
-                {
-                    resetRequest.Add(ldapSearchResult.DirectoryAttributes[attribute].GetValues<string>().First().ToString());
-                }
-                else
-                {
-                    resetRequest.Add(ldapSearchResult.DirectoryAttributes[attribute].GetValues<byte[]>().First().ToArray());
-                }
+            resetRequest.Add(DateTime.Now.ToFileTimeUtc().ToString());
 
-                var response = (ModifyResponse)await ldapConnection.SendRequestAsync(new ModifyRequest(distinguishedName, resetRequest));
+            var response = (ModifyResponse)await ldapConnection.SendRequestAsync(new ModifyRequest(distinguishedName, resetRequest));
 
-                return response.ResultCode == ResultCode.Success;
-            }
-            else
-            {
-                throw new Exception($"AD Computer with DN '{distinguishedName}' could not be found");
-            }
-
-           
+            return response.ResultCode == ResultCode.Success;
         }
 
         public async Task<ADComputer?> GetADComputerAsync(string domainName, LdapCredential ldapCredential, string distinguishedName)
@@ -181,7 +158,7 @@ namespace LAPS_WebUI.Services
                             Version = LAPSVersion.v1,
                             Account = null,
                             Password = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First().ToString(),
-                            PasswordExpireDate = DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First().ToString())),
+                            PasswordExpireDate = DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First().ToString())).ToLocalTime(),
                             IsCurrent = true,
                             PasswordSetDate = null
                         };
@@ -219,10 +196,10 @@ namespace LAPS_WebUI.Services
                             Account = msLAPS_Payload.ManagedAccountName,
                             Password = msLAPS_Payload.Password,
                             WasEncrypted = !domain.Laps.EncryptionDisabled,
-                            PasswordExpireDate =  DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["msLAPS-PasswordExpirationTime"].GetValues<string>().First().ToString())),
+                            PasswordExpireDate =  DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["msLAPS-PasswordExpirationTime"].GetValues<string>().First().ToString())).ToLocalTime(),
                             IsCurrent = true,
-                            PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber))
-                            
+                            PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber)).ToLocalTime()
+
                         };
 
                         ADComputer.LAPSInformations.Add(lapsInformationEntry);
@@ -245,7 +222,7 @@ namespace LAPS_WebUI.Services
                                         Account = historic_msLAPS_Payload.ManagedAccountName,
                                         Password = historic_msLAPS_Payload.Password,
                                         PasswordExpireDate = null,
-                                        PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(historic_msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber))
+                                        PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(historic_msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber)).ToLocalTime()
                                     };
 
                                     ADComputer.LAPSInformations.Add(historicLapsInformationEntry);

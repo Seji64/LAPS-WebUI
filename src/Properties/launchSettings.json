@@ -18,7 +18,13 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Domains__0__Name": "prime.k-sys.io",
+        "Domains__0__Ldap__Server": "ldap.prime.k-sys.io",
+        "Domains__0__Ldap__Port": "636",
+        "Domains__0__Ldap__UseSSL": "true",
+        "Domains__0__Ldap__SearchBase": "OU=Klett IT GmbH,DC=prime,DC=k-sys,DC=io",
+        " Domains__0__Ldap__TrustAllCertificates": "true"
       },
       "applicationUrl": "https://localhost:7213;http://localhost:5213",
       "dotnetRunMessages": true

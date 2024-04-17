@@ -12,6 +12,6 @@ namespace LAPS_WebUI.Interfaces
         Task<List<Domain>> GetDomainsAsync();
         public Task<ADComputer?> GetADComputerAsync(string domainName, LdapCredential ldapCredential, string distinguishedName);
         public Task<List<ADComputer>> SearchADComputersAsync(string domainName, LdapCredential ldapCredential, string query);
-        public Task<bool> ClearLapsPassword(string domainName, LdapCredential ldapCredential, string distinguishedName, LAPSVersion version, bool encrypted);
+        public Task<bool> ClearLapsPassword(string domainName, LdapCredential ldapCredential, string distinguishedName, LAPSVersion version);
     }
 }
