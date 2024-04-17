@@ -1,0 +1,40 @@
+﻿<MudDialog DisableSidePadding="true">
+    <DialogContent>
+        <MudContainer Style="max-height: 500px; overflow-y: scroll">
+            
+            <MudAlert ContentAlignment="HorizontalAlignment.Center" CloseIcon="false" Variant="Variant.Outlined" Icon="@Icon" Severity="@Severity">@ContentText</MudAlert>
+
+            @if (ContentListItems != null && ContentListItems.Any())
+            {
+                foreach (var item in ContentListItems)
+                {
+                    <MudList Clickable=false Dense=true>
+                        <MudListItem Text=@item Icon="@Icons.Material.Outlined.LabelImportant" IconSize=Size.Small />
+                    </MudList>
+                }
+            }       
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @if (ShowCancelButton)
+        {
+            <MudButton OnClick="Cancel">@CancelButtonText</MudButton>
+        }
+        <MudButton Color="@ConfirmButtonColor" Variant="Variant.Filled" OnClick="Submit">@ConfirmButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    #nullable disable
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string ContentText { get; set; }
+    [Parameter] public List<string> ContentListItems { get; set; }
+    [Parameter] public string ConfirmButtonText { get; set; }
+    [Parameter] public string CancelButtonText { get; set; }
+    [Parameter] public Color ConfirmButtonColor { get; set; }
+    [Parameter] public bool ShowCancelButton { get; set; } = true;
+    [Parameter] public Severity Severity { get; set; }
+    [Parameter] public string Icon { get; set; } = Icons.Material.Outlined.QuestionMark;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

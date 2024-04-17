@@ -11,5 +11,6 @@ namespace LAPS_WebUI.Models
         public DateTime? PasswordSetDate { get; set; }
         public LAPSVersion? Version { get; set; }
         public bool IsCurrent { get; set; }
+        public bool WasEncrypted { get; set; }
     }
 }

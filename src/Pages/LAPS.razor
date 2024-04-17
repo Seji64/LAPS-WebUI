@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject ILdapService LDAPService
 @inject ISnackbar Snackbar
+@inject IDialogService Dialog
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-5">
 
@@ -45,8 +46,11 @@
                             </CardHeaderContent>
                             <CardHeaderActions>
                                 <MudStack Row="true" Spacing="0">
+                                    <MudTooltip Text="Clear LAPS Password">
+                                        <MudIconButton Icon="@Icons.Material.Filled.LockReset" Color="Color.Primary" OnClick="@(async e => await ClearLapsPassword(computer))" aria-label="clear laps password" Disabled=@(computer.Loading) />
+                                    </MudTooltip>
                                     <MudTooltip Text="Refresh">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="@(async e => await RefreshComputerDetailsAsync(computer.Name))" aria-label="refresh" Disabled=@(computer.Loading) />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="@(async e => await RefreshComputerDetailsAsync(computer))" aria-label="refresh" Disabled=@(computer.Loading) />
                                     </MudTooltip>
                                     <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close" Disabled=@(computer.Loading) />
                                 </MudStack>

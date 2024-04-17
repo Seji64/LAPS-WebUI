@@ -1,5 +1,8 @@
-﻿using LAPS_WebUI.Models;
+﻿using LAPS_WebUI.Dialogs;
+using LAPS_WebUI.Enums;
+using LAPS_WebUI.Models;
 using MudBlazor;
+using Serilog;
 
 namespace LAPS_WebUI.Pages
 {
@@ -35,10 +38,57 @@ namespace LAPS_WebUI.Pages
             {
                 AutoCompleteSearchBox?.Clear();
                 MudTabsDict.Add(value.Name, null);
-                await FetchComputerDetailsAsync(value.Name);
+                await FetchComputerDetailsAsync(value.DistinguishedName, value.Name);
             }
         }
-        private async Task RefreshComputerDetailsAsync(string computerName)
+
+        private async Task ClearLapsPassword(ADComputer computer)
+        {
+            try
+            {
+
+                MudTabsDict.TryGetValue(computer.Name, out MudTabs? _tab);
+
+                if (_tab != null && computer.LAPSInformations != null)
+                {
+                    LAPSVersion version = LAPSVersion.v1;
+                    bool encrypted = false;
+
+                    if (_tab.ActivePanel.ID.ToString() == "v1")
+                    {
+                        version = LAPSVersion.v1;
+                    }
+
+                    if (_tab.ActivePanel.ID.ToString() == "v2")
+                    {
+                        version = LAPSVersion.v2;
+                        encrypted = computer.LAPSInformations.Single(x => x.Version == LAPSVersion.v2 && x.IsCurrent).WasEncrypted;
+                    }
+                    var parameters = new DialogParameters { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
+                    IDialogReference dialog = Dialog.Show<Confirmation>("Clear LAPS Password", parameters,new DialogOptions() { NoHeader = true });
+                    DialogResult result = await dialog.Result;
+
+                    if(!result.Canceled)
+                    {
+                        computer.LAPSInformations.Clear();
+                        await InvokeAsync(StateHasChanged);
+                        await LDAPService.ClearLapsPassword(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version, encrypted);
+                        Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke gpupdate on {computer.Name} to set a new LAPS Password", Severity.Success);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{ErrorMessage}", ex.Message);
+                Snackbar.Add($"Failed to reset LAPS password for computer {computer.Name}", Severity.Error);
+            }
+            finally
+            {
+                await RefreshComputerDetailsAsync(computer,true);
+            }
+        }
+
+        private async Task RefreshComputerDetailsAsync(ADComputer computer, bool supressNotify = false)
         {
 
             ADComputer? placeHolder = null;
@@ -46,7 +96,7 @@ namespace LAPS_WebUI.Pages
 
             try
             {
-                placeHolder = SelectedComputers.Single(x => x.Name == computerName);
+                placeHolder = SelectedComputers.Single(x => x.Name == computer.Name);
 
                 if (placeHolder.LAPSInformations != null)
                 {
@@ -56,21 +106,33 @@ namespace LAPS_WebUI.Pages
                 placeHolder.LAPSInformations = null;
                 await InvokeAsync(StateHasChanged);
 
-                var tmp = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computerName);
+                var tmp = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName);
 
                 if (tmp != null)
                 {
                     placeHolder.LAPSInformations = tmp.LAPSInformations;
-                    Snackbar.Add($"LAPS data for computer {computerName} successfully refreshed!", Severity.Success);
+
+                    if (!supressNotify)
+                    {
+                        Snackbar.Add($"LAPS data for computer {computer.Name} successfully refreshed!", Severity.Success);
+                    }
+                    
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Log.Error("{ErrorMessage}", ex.Message);
+
                 if (placeHolder != null)
                 {
                     placeHolder.LAPSInformations = backup;
                 }
-                Snackbar.Add($"Failed to refresh LAPS data for computer {computerName}", Severity.Error);
+
+                if (!supressNotify)
+                {
+                    Snackbar.Add($"Failed to refresh LAPS data for computer {computer.Name}", Severity.Error);
+                }
+                    
             }
             finally
             {
@@ -78,17 +140,17 @@ namespace LAPS_WebUI.Pages
             }
         }
 
-        private async Task FetchComputerDetailsAsync(string computerName)
+        private async Task FetchComputerDetailsAsync(string distinguishedName, string computerName)
         {
             ADComputer? placeHolder = null;
 
             try
             {
-                placeHolder = new ADComputer(computerName);
+                placeHolder = new ADComputer(distinguishedName, computerName);
                 SelectedComputers.Add(placeHolder);
                 await InvokeAsync(StateHasChanged);
 
-                var AdComputerObject = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computerName);
+                var AdComputerObject = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), distinguishedName);
                 var selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
 
                 if (AdComputerObject != null && selectedComputer != null)
@@ -109,6 +171,7 @@ namespace LAPS_WebUI.Pages
             }
             catch (Exception ex)
             {
+                Log.Error("{ErrorMessage}", ex.Message);
                 SelectedComputers.RemoveAll(x => x.Name == computerName);
                 Snackbar.Add($"Failed to fetch LAPS data for computer {computerName}\nError: {ex.Message}", Severity.Error);
             }

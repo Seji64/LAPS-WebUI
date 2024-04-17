@@ -1,13 +1,17 @@
 ﻿using CliWrap;
+using LAPS_WebUI.Enums;
 using LAPS_WebUI.Interfaces;
 using LAPS_WebUI.Models;
 using LdapForNet;
 using LdapForNet.Native;
 using Microsoft.Extensions.Options;
 using Serilog;
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
+using static LdapForNet.Native.Native;
 
 namespace LAPS_WebUI.Services
 {
@@ -38,16 +42,16 @@ namespace LAPS_WebUI.Services
             {
                 Domain domain = _Domains.Value.Single(x => x.Name == domainName);
 
-                ldapConnection.Connect(domain.Ldap.Server, domain.Ldap.Port, domain.Ldap.UseSSL ? Native.LdapSchema.LDAPS : Native.LdapSchema.LDAP);
+                ldapConnection.Connect(domain.Ldap.Server, domain.Ldap.Port, domain.Ldap.UseSSL ? LdapSchema.LDAPS : LdapSchema.LDAP);
 
                 if (domain.Ldap.TrustAllCertificates)
                 {
                     ldapConnection.TrustAllCertificates();
                 }
 
-                await ldapConnection.BindAsync(Native.LdapAuthMechanism.SIMPLE, username, password);
+                await ldapConnection.BindAsync(LdapAuthMechanism.SIMPLE, username, password);
 
-                ldapConnection.SetOption(Native.LdapOption.LDAP_OPT_REFERRALS, IntPtr.Zero);
+                ldapConnection.SetOption(LdapOption.LDAP_OPT_REFERRALS, IntPtr.Zero);
 
             }
             catch (Exception ex)
@@ -85,7 +89,61 @@ namespace LAPS_WebUI.Services
             }
         }
 
-        public async Task<ADComputer?> GetADComputerAsync(string domainName, LdapCredential ldapCredential, string name)
+        public async Task<bool> ClearLapsPassword(string domainName, LdapCredential ldapCredential, string distinguishedName, LAPSVersion version, bool encrypted)
+        {
+            Domain? domain = _Domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
+
+            if (ldapCredential is null)
+            {
+                throw new Exception("Failed to get LDAP Credentials");
+            }
+            using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password) ?? throw new Exception("LDAP bind failed!");
+
+            string? defaultNamingContext = domain.Ldap.SearchBase;
+            string attribute = string.Empty;
+
+            if (version == LAPSVersion.v1)
+            {
+                attribute = "ms-Mcs-AdmPwd";
+            }
+
+            if (version == LAPSVersion.v2)
+            {
+                attribute = encrypted ? "msLAPS-EncryptedPassword" : "msLAPS-Password";
+            }
+
+            var ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(distinguishedName={distinguishedName}))", [attribute], LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
+
+            if (ldapSearchResult != null)
+            {
+                var resetRequest = new DirectoryModificationAttribute
+                {
+                    LdapModOperation = LdapModOperation.LDAP_MOD_DELETE,
+                    Name = attribute
+                };
+
+                if (version == LAPSVersion.v1 || !encrypted)
+                {
+                    resetRequest.Add(ldapSearchResult.DirectoryAttributes[attribute].GetValues<string>().First().ToString());
+                }
+                else
+                {
+                    resetRequest.Add(ldapSearchResult.DirectoryAttributes[attribute].GetValues<byte[]>().First().ToArray());
+                }
+
+                var response = (ModifyResponse)await ldapConnection.SendRequestAsync(new ModifyRequest(distinguishedName, resetRequest));
+
+                return response.ResultCode == ResultCode.Success;
+            }
+            else
+            {
+                throw new Exception($"AD Computer with DN '{distinguishedName}' could not be found");
+            }
+
+           
+        }
+
+        public async Task<ADComputer?> GetADComputerAsync(string domainName, LdapCredential ldapCredential, string distinguishedName)
         {
             ADComputer? ADComputer = null;
             Domain? domain = _Domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
@@ -104,23 +162,23 @@ namespace LAPS_WebUI.Services
 
                 string? defaultNamingContext = domain.Ldap.SearchBase;
 
-                var ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(name={name}))",null, Native.LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
+                var ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(distinguishedName={distinguishedName}))",null, LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
 
                 if (ldapSearchResult != null)
                 {
-                    ADComputer = new ADComputer(ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First())
+                    ADComputer = new ADComputer(ldapSearchResult.Dn, ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First())
                     {
                         LAPSInformations = []
                     };
 
                     #region "Try LAPS v1"
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (domain.Laps.ForceVersion == Enums.LAPSVersion.All || domain.Laps.ForceVersion == Enums.LAPSVersion.v1))
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "ms-Mcs-AdmPwd") && (domain.Laps.ForceVersion == LAPSVersion.All || domain.Laps.ForceVersion == LAPSVersion.v1))
                     {
                         LapsInformation lapsInformationEntry = new()
                         {
                             ComputerName = ADComputer.Name,
-                            Version = Enums.LAPSVersion.v1,
+                            Version = LAPSVersion.v1,
                             Account = null,
                             Password = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First().ToString(),
                             PasswordExpireDate = DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First().ToString())),
@@ -137,7 +195,7 @@ namespace LAPS_WebUI.Services
 
                     string fieldName = (domain.Laps.EncryptionDisabled ? "msLAPS-Password" : "msLAPS-EncryptedPassword");
 
-                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (domain.Laps.ForceVersion == Enums.LAPSVersion.All || domain.Laps.ForceVersion == Enums.LAPSVersion.v2))
+                    if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (domain.Laps.ForceVersion == LAPSVersion.All || domain.Laps.ForceVersion == LAPSVersion.v2))
                     {
                         MsLapsPayload? msLAPS_Payload = null;
                         string ldapValue = string.Empty;
@@ -157,9 +215,10 @@ namespace LAPS_WebUI.Services
                         LapsInformation lapsInformationEntry = new()
                         {
                             ComputerName = ADComputer.Name,
-                            Version = Enums.LAPSVersion.v2,
+                            Version = LAPSVersion.v2,
                             Account = msLAPS_Payload.ManagedAccountName,
                             Password = msLAPS_Payload.Password,
+                            WasEncrypted = !domain.Laps.EncryptionDisabled,
                             PasswordExpireDate =  DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["msLAPS-PasswordExpirationTime"].GetValues<string>().First().ToString())),
                             IsCurrent = true,
                             PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(msLAPS_Payload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber))
@@ -182,7 +241,7 @@ namespace LAPS_WebUI.Services
                                     LapsInformation historicLapsInformationEntry = new()
                                     {
                                         ComputerName = ADComputer.Name,
-                                        Version = Enums.LAPSVersion.v2,
+                                        Version = LAPSVersion.v2,
                                         Account = historic_msLAPS_Payload.ManagedAccountName,
                                         Password = historic_msLAPS_Payload.Password,
                                         PasswordExpireDate = null,
@@ -213,7 +272,7 @@ namespace LAPS_WebUI.Services
                 }
                 else
                 {
-                    throw new Exception($"AD Computer {name} could not be found");
+                    throw new Exception($"AD Computer with DN '{distinguishedName}' could not be found");
                 }
             }
 
@@ -268,7 +327,7 @@ namespace LAPS_WebUI.Services
             using (LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password))
             {
                 string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
-                var PropertiesToLoad = new string[] { "cn" };
+                var PropertiesToLoad = new string[] { "cn", "distinguishedName" };
                 string? defaultNamingContext = domain.Ldap.SearchBase;
 
                 try
@@ -278,12 +337,12 @@ namespace LAPS_WebUI.Services
                         throw new Exception("LDAP Bind failed!");
                     }
 
-                    var ldapSearchResults = await ldapConnection.SearchAsync(defaultNamingContext, filter, PropertiesToLoad, Native.LdapSearchScope.LDAP_SCOPE_SUB);
+                    var ldapSearchResults = await ldapConnection.SearchAsync(defaultNamingContext, filter, PropertiesToLoad, LdapSearchScope.LDAP_SCOPE_SUB);
 
-                    foreach (var ldapSearchResult in ldapSearchResults)
+                    result.AddRange(ldapSearchResults.Select(o =>
                     {
-                        result.Add(new ADComputer(ldapSearchResult.DirectoryAttributes["cn"].GetValues<string>().First()));
-                    }
+                        return new ADComputer(o.Dn, o.DirectoryAttributes["cn"].GetValues<string>().First());
+                    }).ToList());
                 }
                 catch (Exception ex)
                 {
