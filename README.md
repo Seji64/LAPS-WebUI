@@ -7,10 +7,12 @@ Version 1.6.0 adds multidomain support. Due this change the configurations chang
 
 ## Setup Preqesites
 
+### Setup Preqesites
+
 - A working Active Directory with Microsoft LAPS installed
 - .NET Core 8.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
 
-## Setup (bare metal):
+### Bare Metal:
 
 - Download the latest Release for your Platform
 - Unzip Archive
@@ -18,7 +20,7 @@ Version 1.6.0 adds multidomain support. Due this change the configurations chang
 - Ensure Python3 and dpapi-ng (`pip install dpapi-ng[kerberos]`) is installed
 - Run *LAPS-WebUI*
 
-## Notes for LAPS v2
+### Notes for LAPS v2
 - Since Version 1.5.0 LAPS v2 is supported
 - By default, LAPS v2 passwords are encrypted. If the LAPS v2 passwords are stored unencrypted, then you have to set
   `EncryptionDisabled` to `true` in the settings
@@ -46,6 +48,9 @@ docker run -d \
 
 There are a few options to configure this. [Here](https://andrewlock.net/exploring-the-dotnet-8-preview-updates-to-docker-images-in-dotnet-8/) is a quite good writeup with explains all options.
 
+
+### Reverse Proxy
+If you are using a reverse proxy ensure `WebSockets` are allowed / enabled
 
 ## Usage:
 - Navigate with your WebBrowser to the LAPS WebUI Page (Default: http://127.0.0.1:8080 )
