@@ -40,7 +40,7 @@ docker run -d \
   -e Domains__0__Ldap__SearchBase='DC=example,DC=com' \
   -p 8080:8080 \
   --restart unless-stopped \
-  ghcr.io/seji64/laps-webui:1.6.0
+  ghcr.io/seji64/laps-webui:1.6
 ```
 ## Advanced configuration
 
