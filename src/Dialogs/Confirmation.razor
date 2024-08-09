@@ -1,4 +1,4 @@
-﻿<MudDialog DisableSidePadding="true">
+﻿<MudDialog>
     <DialogContent>
         <MudContainer Style="max-height: 500px; overflow-y: scroll">
             
@@ -6,9 +6,9 @@
 
             @if (ContentListItems != null && ContentListItems.Any())
             {
-                foreach (var item in ContentListItems)
+                foreach (string? item in ContentListItems)
                 {
-                    <MudList Clickable=false Dense=true>
+                    <MudList T="string" Dense=true>
                         <MudListItem Text=@item Icon="@Icons.Material.Outlined.LabelImportant" IconSize=Size.Small />
                     </MudList>
                 }

@@ -14,7 +14,7 @@ namespace LAPS_WebUI.Components
         {
             if (firstRender)
             {
-                IsCopyToClipboardSupported = await clipboard.IsSupportedAsync();
+                IsCopyToClipboardSupported = await Clipboard.IsSupportedAsync();
             }
         }
 
@@ -22,11 +22,11 @@ namespace LAPS_WebUI.Components
         {
             return !IsCopyToClipboardSupported || LapsInfo is null || string.IsNullOrEmpty(LapsInfo.Password);
         }
-        private async Task CopyLAPSPasswordToClipboardAsync()
+        private async Task CopyLapsPasswordToClipboardAsync()
         {
             if (LapsInfo != null && !string.IsNullOrEmpty(LapsInfo.Password))
             {
-                await clipboard.WriteTextAsync(LapsInfo.Password);
+                await Clipboard.WriteTextAsync(LapsInfo.Password);
                 Snackbar.Add("Copied password to clipboard!", Severity.Success);
             }
             else

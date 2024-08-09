@@ -1,9 +1,9 @@
 ﻿@inherits LayoutComponentBase
-@using MudBlazor.Utilities;
 @inject NavigationManager NavigationManager
 @inject ISessionManagerService sessionManager
 
-<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme"/>
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="_myCustomTheme"/>
+<MudPopoverProvider/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 

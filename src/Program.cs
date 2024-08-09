@@ -8,7 +8,7 @@ using MudBlazor.Services;
 using Serilog;
 using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, lc) => lc
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -36,7 +36,7 @@ builder.Services.AddScoped<ILdapService, LdapService>();
 builder.Services.AddScoped<ISessionManagerService, SessionManagerService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
