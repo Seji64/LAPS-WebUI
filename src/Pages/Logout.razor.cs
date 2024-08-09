@@ -4,9 +4,9 @@
     {
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (await sessionManager.IsUserLoggedInAsync())
+            if (await SessionManager.IsUserLoggedInAsync())
             {
-                await sessionManager.LogoutAsync();
+                await SessionManager.LogoutAsync();
             }
 
             await Task.Delay(500);

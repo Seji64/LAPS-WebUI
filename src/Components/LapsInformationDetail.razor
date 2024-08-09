@@ -1,6 +1,6 @@
 ﻿@inherits MudComponentBase
 @inject ISnackbar Snackbar
-@inject ClipboardService clipboard
+@inject ClipboardService Clipboard
 @using CurrieTechnologies.Razor.Clipboard
 
 @if (LapsInfo != null)
@@ -13,7 +13,7 @@
             </AdornmentStart>
             <AdornmentEnd>
                 <MudTooltip Text="@(IsCopyToClipboardSupported ? "Copy Password to clipboard" : "Your browser does not support Clipboard API - please use STRG+C")">
-                    <MudIconButton Class="mb-1" Disabled="@(IsCopyButtonDisabled())" Icon="@Icons.Material.Outlined.ContentCopy" Color="Color.Primary" OnClick="@(async (_) => await CopyLAPSPasswordToClipboardAsync())" aria-label="Copy Password to clipbard" />
+                    <MudIconButton Class="mb-1" Disabled="@(IsCopyButtonDisabled())" Icon="@Icons.Material.Outlined.ContentCopy" Color="Color.Primary" OnClick="@(async (_) => await CopyLapsPasswordToClipboardAsync())" aria-label="Copy Password to clipbard" />
                 </MudTooltip>
                 
             </AdornmentEnd>

@@ -6,21 +6,21 @@ namespace LAPS_WebUI.Services
     public class CryptService : ICryptService
     {
         private readonly IDataProtectionProvider _dataProtectionProvider;
-        private readonly string keyString;
+        private readonly string _keyString;
         public CryptService(IDataProtectionProvider dataProtectionProvider)
         {
             _dataProtectionProvider = dataProtectionProvider;
-            keyString = Guid.NewGuid().ToString().Replace("-", "");
+            _keyString = Guid.NewGuid().ToString().Replace("-", "");
         }
         public string DecryptString(string cipherText)
         {
-            var protector = _dataProtectionProvider.CreateProtector(keyString);
+            IDataProtector protector = _dataProtectionProvider.CreateProtector(_keyString);
             return protector.Unprotect(cipherText);
         }
 
         public string EncryptString(string text)
         {
-            var protector = _dataProtectionProvider.CreateProtector(keyString);
+            IDataProtector protector = _dataProtectionProvider.CreateProtector(_keyString);
             return protector.Protect(text);
         }
     }

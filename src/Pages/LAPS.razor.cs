@@ -6,17 +6,18 @@ using Serilog;
 
 namespace LAPS_WebUI.Pages
 {
-    public partial class LAPS
+    public partial class LAPS : IDisposable
     {
-        private readonly Dictionary<string, MudTabs?> MudTabsDict = [];
-        private MudAutocomplete<ADComputer>? AutoCompleteSearchBox;
+        private readonly Dictionary<string, MudTabs?> _mudTabsDict = [];
+        private MudAutocomplete<AdComputer>? _autoCompleteSearchBox;
+        private bool _disposedValue;
         private bool Authenticated { get; set; } = true;
         private LdapForNet.LdapCredential? LdapCredential { get; set; }
-        private List<ADComputer> SelectedComputers { get; set; } = [];
+        private List<AdComputer> SelectedComputers { get; set; } = [];
         private string? DomainName { get; set; }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            Authenticated = await sessionManager.IsUserLoggedInAsync();
+            Authenticated = await SessionManager.IsUserLoggedInAsync();
 
             if (!Authenticated)
             {
@@ -25,52 +26,48 @@ namespace LAPS_WebUI.Pages
 
             if (firstRender && Authenticated)
             {
-                LdapCredential = await sessionManager.GetLdapCredentialsAsync();
-                DomainName = await sessionManager.GetDomainAsync();
+                LdapCredential = await SessionManager.GetLdapCredentialsAsync();
+                DomainName = await SessionManager.GetDomainAsync();
             }
 
             await InvokeAsync(StateHasChanged);
         }
 
-        private async Task OnSelectedItemChangedAsync(ADComputer value)
+        private async Task OnSelectedItemChangedAsync(AdComputer value)
         {
-            if (value != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
+            if (value != null && _autoCompleteSearchBox != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
             {
-                AutoCompleteSearchBox?.Clear();
-                MudTabsDict.Add(value.Name, null);
+                await _autoCompleteSearchBox.ClearAsync();
+                _mudTabsDict.Add(value.Name, null);
                 await FetchComputerDetailsAsync(value.DistinguishedName, value.Name);
             }
         }
 
-        private async Task ClearLapsPassword(ADComputer computer)
+        private async Task ClearLapsPassword(AdComputer computer)
         {
             try
             {
 
-                MudTabsDict.TryGetValue(computer.Name, out MudTabs? _tab);
+                _mudTabsDict.TryGetValue(computer.Name, out MudTabs? tab);
 
-                if (_tab != null && computer.LAPSInformations != null)
+                if (tab != null && computer.LapsInformations != null)
                 {
-                    LAPSVersion version = LAPSVersion.v1;
-
-                    if (_tab.ActivePanel.ID.ToString() == "v1")
+                    LAPSVersion version = tab.ActivePanel.ID.ToString() switch
                     {
-                        version = LAPSVersion.v1;
-                    }
+                        "v1" => LAPSVersion.v1,
+                        "v2" => LAPSVersion.v2,
+                        _ => LAPSVersion.v1
+                    };
 
-                    if (_tab.ActivePanel.ID.ToString() == "v2")
-                    {
-                        version = LAPSVersion.v2;
-                    }
-                    var parameters = new DialogParameters { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
-                    IDialogReference dialog = Dialog.Show<Confirmation>("Clear LAPS Password", parameters,new DialogOptions() { NoHeader = true });
-                    DialogResult result = await dialog.Result;
+                    DialogParameters parameters = new DialogParameters { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
+                    IDialogReference dialog = await Dialog.ShowAsync<Confirmation>("Clear LAPS Password", parameters,new DialogOptions() { NoHeader = true });
+                    DialogResult? result = await dialog.Result;
 
-                    if(!result.Canceled)
+                    if(result is { Canceled: false })
                     {
-                        computer.LAPSInformations.Clear();
+                        computer.LapsInformations.Clear();
                         await InvokeAsync(StateHasChanged);
-                        await LDAPService.ClearLapsPassword(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version);
+                        await LdapService.ClearLapsPassword(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version);
                         Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke gpupdate on {computer.Name} to set a new LAPS Password", Severity.Success);
                     }
                 }
@@ -86,29 +83,29 @@ namespace LAPS_WebUI.Pages
             }
         }
 
-        private async Task RefreshComputerDetailsAsync(ADComputer computer, bool supressNotify = false)
+        private async Task RefreshComputerDetailsAsync(AdComputer computer, bool supressNotify = false)
         {
 
-            ADComputer? placeHolder = null;
+            AdComputer? placeHolder = null;
             List<LapsInformation> backup = [];
 
             try
             {
                 placeHolder = SelectedComputers.Single(x => x.Name == computer.Name);
 
-                if (placeHolder.LAPSInformations != null)
+                if (placeHolder.LapsInformations != null)
                 {
-                    backup.AddRange(placeHolder.LAPSInformations);
+                    backup.AddRange(placeHolder.LapsInformations);
                 }
 
-                placeHolder.LAPSInformations = null;
+                placeHolder.LapsInformations = null;
                 await InvokeAsync(StateHasChanged);
 
-                var tmp = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName);
+                AdComputer? tmp = await LdapService.GetAdComputerAsync(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName);
 
                 if (tmp != null)
                 {
-                    placeHolder.LAPSInformations = tmp.LAPSInformations;
+                    placeHolder.LapsInformations = tmp.LapsInformations;
 
                     if (!supressNotify)
                     {
@@ -123,7 +120,7 @@ namespace LAPS_WebUI.Pages
 
                 if (placeHolder != null)
                 {
-                    placeHolder.LAPSInformations = backup;
+                    placeHolder.LapsInformations = backup;
                 }
 
                 if (!supressNotify)
@@ -140,29 +137,27 @@ namespace LAPS_WebUI.Pages
 
         private async Task FetchComputerDetailsAsync(string distinguishedName, string computerName)
         {
-            ADComputer? placeHolder = null;
-
             try
             {
-                placeHolder = new ADComputer(distinguishedName, computerName);
+                AdComputer placeHolder = new AdComputer(distinguishedName, computerName);
                 SelectedComputers.Add(placeHolder);
                 await InvokeAsync(StateHasChanged);
 
-                var AdComputerObject = await LDAPService.GetADComputerAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), distinguishedName);
-                var selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
+                AdComputer? adComputerObject = await LdapService.GetAdComputerAsync(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), distinguishedName);
+                AdComputer? selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
 
-                if (AdComputerObject != null && selectedComputer != null)
+                if (adComputerObject != null && selectedComputer != null)
                 {
-                    selectedComputer.LAPSInformations = AdComputerObject.LAPSInformations;
-                    selectedComputer.FailedToRetrieveLAPSDetails = AdComputerObject.FailedToRetrieveLAPSDetails;
+                    selectedComputer.LapsInformations = adComputerObject.LapsInformations;
+                    selectedComputer.FailedToRetrieveLapsDetails = adComputerObject.FailedToRetrieveLapsDetails;
 
                     await InvokeAsync(StateHasChanged);
-                    MudTabsDict.TryGetValue(computerName, out MudTabs? _tab);
+                    _mudTabsDict.TryGetValue(computerName, out MudTabs? tab);
 
-                    if (!selectedComputer.FailedToRetrieveLAPSDetails && _tab != null)
+                    if (!selectedComputer.FailedToRetrieveLapsDetails && tab != null)
                     {
                         await InvokeAsync(StateHasChanged);
-                        _tab.ActivatePanel(_tab.Panels.First(x => !x.Disabled));
+                        tab.ActivatePanel(tab.Panels.First(x => !x.Disabled));
                     }
 
                 }
@@ -177,28 +172,41 @@ namespace LAPS_WebUI.Pages
 
         private void RemoveComputerCard(string computerName)
         {
-            MudTabsDict.Remove(computerName);
+            _mudTabsDict.Remove(computerName);
             SelectedComputers.RemoveAll(x => x.Name == computerName);
         }
 
-        private async Task<IEnumerable<ADComputer>> SearchAsync(string value)
+        private async Task<IEnumerable<AdComputer>> SearchAsync(string value,CancellationToken token)
         {
-            List<ADComputer> searchResult = [];
-
+            List<AdComputer> searchResult = [];
             if (string.IsNullOrEmpty(value))
             {
                 return [];
             }
-
-            var tmp = await LDAPService.SearchADComputersAsync(DomainName ?? await sessionManager.GetDomainAsync(), LdapCredential ?? await sessionManager.GetLdapCredentialsAsync(), value);
-
-            if (tmp != null)
-            {
-                searchResult.AddRange(tmp);
-            }
-
+            List<AdComputer> tmp = await LdapService.SearchAdComputersAsync(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), value);
+            searchResult.AddRange(tmp);
             return searchResult;
 
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // check if already disposed
+            if (_disposedValue) return;
+            if (disposing)
+            {
+                // free managed objects here
+                SelectedComputers.Clear();
+            }
+            
+            // set the bool value to true
+            _disposedValue = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

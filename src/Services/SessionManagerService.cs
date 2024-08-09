@@ -4,48 +4,40 @@ using LdapForNet;
 
 namespace LAPS_WebUI.Services
 {
-    public class SessionManagerService : ISessionManagerService
+    public class SessionManagerService(
+        ISessionStorageService sessionStorageService,
+        ILdapService ldapService,
+        ICryptService cryptService)
+        : ISessionManagerService
     {
-
-        private readonly ISessionStorageService _sessionStorageService;
-        private readonly ILdapService _ldapService;
-        private readonly ICryptService _cryptService;
-
-        public SessionManagerService(ISessionStorageService sessionStorageService, ILdapService ldapService, ICryptService cryptService)
-        {
-            _sessionStorageService = sessionStorageService;
-            _ldapService = ldapService;
-            _cryptService = cryptService;
-        }
-
         public async Task<List<string>> GetDomainsAsync()
         {
-            return (await _ldapService.GetDomainsAsync()).Select(x => x.Name).ToList();
+            return (await ldapService.GetDomainsAsync()).Select(x => x.Name).ToList();
         }
 
         public async Task<string> GetDomainAsync()
         {
-            return await _sessionStorageService.GetItemAsync<string>("domainName");
+            return await sessionStorageService.GetItemAsync<string>("domainName");
         }
 
         public async Task<LdapCredential> GetLdapCredentialsAsync()
         {
-            var encryptedCreds = await _sessionStorageService.GetItemAsync<LdapCredential>("ldapCredentials");
+            LdapCredential? encryptedCreds = await sessionStorageService.GetItemAsync<LdapCredential>("ldapCredentials");
 
-            encryptedCreds.UserName = _cryptService.DecryptString(encryptedCreds.UserName);
-            encryptedCreds.Password = _cryptService.DecryptString(encryptedCreds.Password);
+            encryptedCreds.UserName = cryptService.DecryptString(encryptedCreds.UserName);
+            encryptedCreds.Password = cryptService.DecryptString(encryptedCreds.Password);
 
             return encryptedCreds;
         }
 
         public async Task<bool> IsUserLoggedInAsync()
         {
-            return await _sessionStorageService.GetItemAsync<bool>("loggedIn");
+            return await sessionStorageService.GetItemAsync<bool>("loggedIn");
         }
 
         public async Task<bool> LoginAsync(string domainName, string username, string password)
         {
-            var bindResult = await _ldapService.TestCredentialsAsync(domainName,username, password);
+            bool bindResult = await ldapService.TestCredentialsAsync(domainName,username, password);
 
             if (!bindResult)
             {
@@ -53,16 +45,16 @@ namespace LAPS_WebUI.Services
             }
             else
             {
-                await _sessionStorageService.SetItemAsync("loggedIn", bindResult);
-                await _sessionStorageService.SetItemAsync("domainName", domainName);
-                await _sessionStorageService.SetItemAsync("ldapCredentials", new LdapCredential() { UserName = _cryptService.EncryptString(username), Password = _cryptService.EncryptString(password) });
+                await sessionStorageService.SetItemAsync("loggedIn", bindResult);
+                await sessionStorageService.SetItemAsync("domainName", domainName);
+                await sessionStorageService.SetItemAsync("ldapCredentials", new LdapCredential() { UserName = cryptService.EncryptString(username), Password = cryptService.EncryptString(password) });
 
                 return true;
             }
         }
         public async Task<bool> LogoutAsync()
         {
-            await _sessionStorageService.ClearAsync();
+            await sessionStorageService.ClearAsync();
             return true;
         }
     }

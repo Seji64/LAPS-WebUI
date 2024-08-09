@@ -9,9 +9,9 @@ namespace LAPS_WebUI.Shared
         private bool _isDarkMode;
         private MudThemeProvider _mudThemeProvider = new();
         private bool IsUserLoggedIn { get; set; } = false;
-        private readonly MudTheme MyCustomTheme = new()
+        private readonly MudTheme _myCustomTheme = new()
         {
-            Palette = new PaletteLight()
+            PaletteLight = new PaletteLight()
             {
                 Primary = new MudColor("#455FAC"),
                 Secondary = new MudColor("#CE3C3C"),
@@ -22,7 +22,7 @@ namespace LAPS_WebUI.Shared
             }
         };
 
-        void ToggleDarkMode()
+        private void ToggleDarkMode()
         {
             _isDarkMode = !_isDarkMode;
         }

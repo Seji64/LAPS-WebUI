@@ -5,7 +5,7 @@
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             // redirect to home if already logged in
-            if (await sessionManager.IsUserLoggedInAsync())
+            if (await SessionManager.IsUserLoggedInAsync())
             {
                 NavigationManager.NavigateTo("/laps");
             }

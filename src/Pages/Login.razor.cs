@@ -10,9 +10,9 @@ namespace LAPS_WebUI.Pages
         private string _errorMessage = string.Empty;
         private List<string> _domains = [];
 
-        protected async override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
-            _domains = await sessionManager.GetDomainsAsync();
+            _domains = await SessionManager.GetDomainsAsync();
 
             if (_domains.Count > 0 )
             {
@@ -26,7 +26,7 @@ namespace LAPS_WebUI.Pages
             _processing = true;
             try
             {
-                if (await sessionManager.LoginAsync(_loginRequest.DomainName ?? string.Empty, _loginRequest.Username ?? string.Empty, _loginRequest.Password ?? string.Empty))
+                if (await SessionManager.LoginAsync(_loginRequest.DomainName ?? string.Empty, _loginRequest.Username ?? string.Empty, _loginRequest.Password ?? string.Empty))
                 {
                     NavigationManager.NavigateTo("/laps");
                 }
