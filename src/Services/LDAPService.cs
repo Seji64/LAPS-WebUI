@@ -118,7 +118,10 @@ namespace LAPS_WebUI.Services
 
             string? defaultNamingContext = domain.Ldap.SearchBase;
 
-            LdapEntry? ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(distinguishedName={distinguishedName}))",null, LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
+            string sanitizedDistinguishedName =
+                distinguishedName.Replace("(", "0x28").Replace(")", "0x29").Replace(@"\", "0x5c");
+            
+            LdapEntry? ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(distinguishedName={sanitizedDistinguishedName}))",null, LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
 
             if (ldapSearchResult != null)
             {
@@ -279,8 +282,10 @@ namespace LAPS_WebUI.Services
                 throw new Exception("Failed to get LDAP Credentials");
             }
 
+            string sanitizedQuery = query.Replace("(", "0x28").Replace(")", "0x29").Replace(@"\", "0x5c");
+            
             using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password);
-            string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
+            string filter = $"(&(objectCategory=computer)(name={sanitizedQuery}{(sanitizedQuery.EndsWith('*') ? string.Empty : '*')}))";
             string[] propertiesToLoad = new string[] { "cn", "distinguishedName" };
             string? defaultNamingContext = domain.Ldap.SearchBase;
 
