@@ -21,11 +21,11 @@
   <ItemGroup>
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="CliWrap" Version="3.6.6" />
-    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="7.0.0" />
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="7.0.1" />
     <PackageReference Include="CurrieTechnologies.Razor.Clipboard" Version="1.6.0" />
     <PackageReference Include="LdapForNet" Version="2.7.15" />
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.8" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
     <PackageReference Include="MudBlazor" Version="7.6.0" />

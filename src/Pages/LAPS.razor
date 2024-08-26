@@ -54,55 +54,57 @@
                                     </MudTooltip>
                                     <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => RemoveComputerCard(computer.Name))" aria-label="close" Disabled=@(computer.Loading) />
                                 </MudStack>
-                            </CardHeaderActions>       
+                            </CardHeaderActions>    
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudLoading Class="d-flex justify-center" Loading="@computer.Loading" LoaderType="LoaderType.Circular">
+                            <div style="position: relative" Class="mb-4">
+                                <MudLoading Loading="@computer.Loading" LoaderType="LoaderType.Circular">
                                 @if (!computer.FailedToRetrieveLapsDetails)
                                 {
-                                <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" PanelClass="pa-4" @key="computer.Name" @ref="_mudTabsDict[computer.Name]">
-                                    <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v1, IsCurrent: true }))>
-                                        <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)"/>
-                                    </MudTabPanel>
-                                    <MudTabPanel Icon="@Icons.Material.Outlined.Filter2" ID="@("v2")" Text="v2" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true }))>
-                                        <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true })"/>
-                                    </MudTabPanel>
-                                    <MudTabPanel Icon="@Icons.Material.Outlined.History" ID="@("history")" Text="History" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: false }))>
-                                        <MudSimpleTable Style="overflow-x: auto;" Dense="true" Hover="true" Striped="true">
-                                            <thead>
-                                            <tr>
-                                                <th>Account</th>
-                                                <th>Password</th>
-                                                <th>Date set</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @foreach (LapsInformation entry in computer.LapsInformations!.Where(x => x is { IsCurrent: false, Version: Enums.LAPSVersion.v2 }))
-                                            {
-                                            <tr>
-                                                <td>
-                                                    @entry.Account
-                                                </td>
-                                                <td>
-                                                    @entry.Password
-                                                </td>
-                                                <td>
-                                                    @entry.PasswordSetDate
-                                                </td>
-                                            </tr>
-                                            }
-                                            </tbody>
-                                        </MudSimpleTable>
-                                    </MudTabPanel>
-                                </MudTabs>
+                                    <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" PanelClass="pa-4" @key="computer.Name" @ref="_mudTabsDict[computer.Name]">
+                                        <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v1, IsCurrent: true }))>
+                                            <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)"/>
+                                        </MudTabPanel>
+                                        <MudTabPanel Icon="@Icons.Material.Outlined.Filter2" ID="@("v2")" Text="v2" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true }))>
+                                            <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true })"/>
+                                        </MudTabPanel>
+                                        <MudTabPanel Icon="@Icons.Material.Outlined.History" ID="@("history")" Text="History" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: false }))>
+                                            <MudSimpleTable Style="overflow-x: auto;" Dense="true" Hover="true" Striped="true">
+                                                <thead>
+                                                <tr>
+                                                    <th>Account</th>
+                                                    <th>Password</th>
+                                                    <th>Date set</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                @foreach (LapsInformation entry in computer.LapsInformations!.Where(x => x is { IsCurrent: false, Version: Enums.LAPSVersion.v2 }))
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @entry.Account
+                                                        </td>
+                                                        <td>
+                                                            @entry.Password
+                                                        </td>
+                                                        <td>
+                                                            @entry.PasswordSetDate
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                </tbody>
+                                            </MudSimpleTable>
+                                        </MudTabPanel>
+                                    </MudTabs>
                                 }
                                 else
                                 {
-                                <MudAlert Icon="@Icons.Material.Outlined.Warning" ShowCloseIcon="false" Variant="Variant.Outlined" Severity="Severity.Warning">
-                                    <MudText Typo="Typo.inherit">No permission to retrieve LAPS Password or no LAPS Password set!</MudText>
-                                </MudAlert>
+                                    <MudAlert Icon="@Icons.Material.Outlined.Warning" ShowCloseIcon="false" Variant="Variant.Outlined" Severity="Severity.Warning">
+                                        <MudText Typo="Typo.inherit">No permission to retrieve LAPS Password or no LAPS Password set!</MudText>
+                                    </MudAlert>
                                 }
                             </MudLoading>
+                            </div>
                         </MudCardContent>
                     </MudCard>
                 </MudItem>

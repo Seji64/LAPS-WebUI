@@ -78,7 +78,7 @@ namespace LAPS_WebUI.Services
             {
                 throw new Exception("Failed to get LDAP Credentials");
             }
-            using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password) ?? throw new Exception("LDAP bind failed!");
+            using LdapConnection ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password) ?? throw new Exception("LDAP bind failed!");
 
             string attribute = version switch
             {
@@ -99,11 +99,45 @@ namespace LAPS_WebUI.Services
 
             return response.ResultCode == ResultCode.Success;
         }
+        
+        private static string EscapeLdapSearchFilter(string searchFilter)
+        {
+            StringBuilder escape = new StringBuilder();
+            foreach (char current in searchFilter)
+            {
+                switch (current)
+                {
+                    case '\\':
+                        escape.Append(@"\5c");
+                        break;
+                    case '*':
+                        escape.Append(@"\2a");
+                        break;
+                    case '(':
+                        escape.Append(@"\28");
+                        break;
+                    case ')':
+                        escape.Append(@"\29");
+                        break;
+                    case '\u0000':
+                        escape.Append(@"\00");
+                        break;
+                    case '/':
+                        escape.Append(@"\2f");
+                        break;
+                    default:
+                        escape.Append(current);
+                        break;
+                }
+            }
 
+            return escape.ToString();
+        }
+        
         public async Task<AdComputer?> GetAdComputerAsync(string domainName, LdapCredential ldapCredential, string distinguishedName)
         {
-            AdComputer? adComputer = null;
-            Domain? domain = _domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
+            AdComputer? adComputer;
+            Domain domain = _domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
             if (ldapCredential is null)
             {
@@ -117,11 +151,10 @@ namespace LAPS_WebUI.Services
             }
 
             string? defaultNamingContext = domain.Ldap.SearchBase;
-
-            string sanitizedDistinguishedName =
-                distinguishedName.Replace("(", "0x28").Replace(")", "0x29").Replace(@"\", "0x5c");
             
-            LdapEntry? ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, $"(&(objectCategory=computer)(distinguishedName={sanitizedDistinguishedName}))",null, LdapSearchScope.LDAP_SCOPE_SUB)).SingleOrDefault();
+            string ldapFilter = $"(&(objectCategory=computer)(distinguishedName={distinguishedName}))";
+            
+            LdapEntry? ldapSearchResult = (await ldapConnection.SearchAsync(defaultNamingContext, ldapFilter)).SingleOrDefault();
 
             if (ldapSearchResult != null)
             {
@@ -139,8 +172,8 @@ namespace LAPS_WebUI.Services
                         ComputerName = adComputer.Name,
                         Version = LAPSVersion.v1,
                         Account = null,
-                        Password = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First().ToString(),
-                        PasswordExpireDate = DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First().ToString())).ToLocalTime(),
+                        Password = ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwd"].GetValues<string>().First(),
+                        PasswordExpireDate = DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["ms-Mcs-AdmPwdExpirationTime"].GetValues<string>().First())).ToLocalTime(),
                         IsCurrent = true,
                         PasswordSetDate = null
                     };
@@ -156,12 +189,12 @@ namespace LAPS_WebUI.Services
 
                 if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (domain.Laps.ForceVersion == LAPSVersion.All || domain.Laps.ForceVersion == LAPSVersion.v2))
                 {
-                    MsLapsPayload? msLapsPayload = null;
+                    MsLapsPayload? msLapsPayload;
                     string ldapValue;
 
                     if (domain.Laps.EncryptionDisabled)
                     {
-                        ldapValue = ldapSearchResult.DirectoryAttributes["msLAPS-Password"].GetValues<string>().First().ToString();
+                        ldapValue = ldapSearchResult.DirectoryAttributes["msLAPS-Password"].GetValues<string>().First();
                     }
                     else
                     {
@@ -178,7 +211,7 @@ namespace LAPS_WebUI.Services
                         Account = msLapsPayload.ManagedAccountName,
                         Password = msLapsPayload.Password,
                         WasEncrypted = !domain.Laps.EncryptionDisabled,
-                        PasswordExpireDate =  DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["msLAPS-PasswordExpirationTime"].GetValues<string>().First().ToString())).ToLocalTime(),
+                        PasswordExpireDate =  DateTime.FromFileTimeUtc(Convert.ToInt64(ldapSearchResult.DirectoryAttributes["msLAPS-PasswordExpirationTime"].GetValues<string>().First())).ToLocalTime(),
                         IsCurrent = true,
                         PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(msLapsPayload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber)).ToLocalTime()
 
@@ -275,17 +308,15 @@ namespace LAPS_WebUI.Services
         public async Task<List<AdComputer>> SearchAdComputersAsync(string domainName, LdapCredential ldapCredential, string query)
         {
             List<AdComputer> result = [];
-            Domain? domain = _domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
+            Domain domain = _domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
             if (ldapCredential is null)
             {
                 throw new Exception("Failed to get LDAP Credentials");
             }
-
-            string sanitizedQuery = query.Replace("(", "0x28").Replace(")", "0x29").Replace(@"\", "0x5c");
             
             using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password);
-            string filter = $"(&(objectCategory=computer)(name={sanitizedQuery}{(sanitizedQuery.EndsWith('*') ? string.Empty : '*')}))";
+            string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
             string[] propertiesToLoad = new string[] { "cn", "distinguishedName" };
             string? defaultNamingContext = domain.Ldap.SearchBase;
 
@@ -296,9 +327,9 @@ namespace LAPS_WebUI.Services
                     throw new Exception("LDAP Bind failed!");
                 }
 
-                IList<LdapEntry>? ldapSearchResults = await ldapConnection.SearchAsync(defaultNamingContext, filter, propertiesToLoad, LdapSearchScope.LDAP_SCOPE_SUB);
+                IList<LdapEntry>? ldapSearchResults = await ldapConnection.SearchAsync(defaultNamingContext, filter, propertiesToLoad);
 
-                result.AddRange(ldapSearchResults.Select(o => new AdComputer(o.Dn, o.DirectoryAttributes["cn"].GetValues<string>().First())).ToList());
+                result.AddRange(ldapSearchResults.Select(o => new AdComputer(EscapeLdapSearchFilter(o.Dn), o.DirectoryAttributes["cn"].GetValues<string>().First())).ToList());
             }
             catch (Exception ex)
             {
