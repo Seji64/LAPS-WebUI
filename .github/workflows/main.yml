@@ -39,7 +39,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
 
       - name: Build
         shell: bash
@@ -47,7 +47,7 @@ jobs:
           tag=$(git describe --tags --abbrev=0)
           release_name="LAPS-WebUI-$tag-${{ matrix.target }}"
           # Build everything
-          dotnet publish src/LAPS-WebUI.csproj --self-contained --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish src/LAPS-WebUI.csproj --self-contained --framework net9.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
