@@ -25,7 +25,7 @@
 </MudDialog>
 @code {
     #nullable disable
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string ContentText { get; set; }
     [Parameter] public List<string> ContentListItems { get; set; }
     [Parameter] public string ConfirmButtonText { get; set; }

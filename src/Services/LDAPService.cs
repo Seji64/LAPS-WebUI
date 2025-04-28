@@ -45,7 +45,7 @@ namespace LAPS_WebUI.Services
                     ldapConnection.TrustAllCertificates();
                 }
 
-                await ldapConnection.BindAsync(LdapAuthMechanism.SIMPLE, username, password);
+                await ldapConnection.BindAsync(LdapAuthMechanism.GSSAPI, username, password);
 
                 ldapConnection.SetOption(LdapOption.LDAP_OPT_REFERRALS, IntPtr.Zero);
 

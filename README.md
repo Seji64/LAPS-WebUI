@@ -10,7 +10,7 @@ Version 1.6.0 adds multidomain support. Due this change the configurations chang
 ### Setup Preqesites
 
 - A working Active Directory with Microsoft LAPS installed
-- .NET Core 8.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
+- .NET Core 9.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
 
 ### Bare Metal:
 
