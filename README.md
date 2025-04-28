@@ -1,16 +1,36 @@
 # LAPS-WebUI
-A nice and simple Web Interface for LAPS (Local Administrator Password Solution)
 
-## Version 1.6.0 breaking change
+A simple web interface for Microsoft LAPS (Local Administrator Password Solution).
 
-Version 1.6.0 adds multidomain support. Due this change the configurations changes. Please see `appsettings.json.example` and
+---
 
-## Setup Preqesites
+## 📚 About
 
-### Setup Preqesites
+This is a modern frontend for Microsoft LAPS, supporting:
+- LAPS v1 and v2
+- Multiple Active Directory domains
+- Authentication directly via Active Directory
+- Bare-metal and Docker deployment
 
-- A working Active Directory with Microsoft LAPS installed
-- .NET Core 9.0 compatible Operating System (Ubuntu/Debian/CentOS/Alpine Linux/Windows/macOS) or a Docker Host
+No additional user management is needed — access is fully controlled by Active Directory permissions.
+
+---
+
+## ⚠️ Version 1.6.0 Notice
+
+> Starting with version 1.6.0, multi-domain support was added.  
+> As a result, the configuration format has changed.  
+> Review the updated `appsettings.json.example` for details and adjust your setup accordingly.
+
+---
+
+## 🛠 Requirements
+
+- Active Directory with Microsoft LAPS installed
+- .NET 9 runtime or a Docker host
+- Python 3 with `dpapi-ng` installed:
+  ```bash
+  pip install dpapi-ng[kerberos]
 
 ### Bare Metal:
 
@@ -42,24 +62,24 @@ docker run -d \
   --restart unless-stopped \
   ghcr.io/seji64/laps-webui:1.6
 ```
-## Advanced configuration
 
-### Change Listen Address and/or Port
+## ⚙️ Advanced Configuration
+- Listen address and port: [Learn more](https://andrewlock.net/exploring-the-dotnet-8-preview-updates-to-docker-images-in-dotnet-8/)
+- Behind a reverse proxy: WebSocket support must be enabled!
 
-There are a few options to configure this. [Here](https://andrewlock.net/exploring-the-dotnet-8-preview-updates-to-docker-images-in-dotnet-8/) is a quite good writeup with explains all options.
 
+## 🧑‍💻 Usage
+ - Access the app at: http://127.0.0.1:8080
+ - Authenticate with your Active Directory user credentials
+ - Search for a computer by its name
+ - Click on the result to display the LAPS-managed password
 
-### Reverse Proxy
-If you are using a reverse proxy ensure `WebSockets` are allowed / enabled
+## ❓ FAQ
+### Why is there no user management?
+Authentication and authorization are fully handled by Active Directory.
 
-## Usage:
-- Navigate with your WebBrowser to the LAPS WebUI Page (Default: http://127.0.0.1:8080 )
-- Login with any Active Directory User which can access the LAPS LDAP Properties
-- Type any Computername in the Searchbox and click a result to view the LAPS Password.
-
-## Why is there no User Management?
-
-There is none cause *LAPS-WebUI* authenticates against your ActiveDirectory. There is also defined who can read those LAPS Passwords.
+### What LAPS versions are supported?
+Both Microsoft LAPS v1 (legacy) and LAPS v2 (modern) are supported.
 
 ## Screenshots:
 
