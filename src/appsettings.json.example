@@ -28,7 +28,8 @@
         "Port": 636,
         "UseSSL": true,
         "TrustAllCertificates": true,
-        "SearchBase": "OU=Clients,DC=contoso,DC=com"
+        "SearchBase": "OU=Clients,DC=contoso,DC=com",
+        "AuthMechanism": "SIMPLE" // Allowed Values: SIMPLE, GSSAPI (windows only) | Default: SIMPLE
       },
       "Laps": {
         "ForceVersion": "All", // Allowed Values: All, v1, v2 | Default: All (v1 & v2)

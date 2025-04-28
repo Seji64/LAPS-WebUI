@@ -1,4 +1,6 @@
-﻿namespace LAPS_WebUI.Models
+﻿using LdapForNet.Native;
+
+namespace LAPS_WebUI.Models
 {
     public class LdapOptions
     {
@@ -7,5 +9,6 @@
         public bool UseSsl { get; set; }
         public bool TrustAllCertificates { get; set; }
         public string? SearchBase { get; set; }
+        public string AuthMechanism { get; set; } = "SIMPLE";
     }
 }
