@@ -300,7 +300,8 @@ namespace LAPS_WebUI.Services
             }
             catch (Exception ex)
             {
-                Log.Error("Decrypt LAPS Password failed => {ErrorMessage}", ex.Message);
+                Log.Error("Decrypt LAPS Password failed. Please check if Domain Controllers are reachable and your python environment is setup correctly");
+                Log.Debug("Error Stacktrace => {ErrorMessage}", ex.Message);
                 throw new ArgumentException("Failed to decrypt LAPSv2 Password");
             }
 

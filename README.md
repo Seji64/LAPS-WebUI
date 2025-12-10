@@ -44,7 +44,7 @@ No additional user management is needed — access is fully controlled by Active
 - Since Version 1.5.0 LAPS v2 is supported
 - By default, LAPS v2 passwords are encrypted. If the LAPS v2 passwords are stored unencrypted, then you have to set
   `EncryptionDisabled` to `true` in the settings
-- When LAPS v2 Passwords are encrypted a direct connection to the domain controllers with `Kerberos` and `DCE-RPC` is needed in order to decrypt those passwords. For LAPS v1 and unecrypted LAPS v2 passwords only `LDAP` is needed
+- When LAPS v2 Passwords are encrypted a direct connection to the domain controllers with `Kerberos` and `DCE-RPC` is needed in order to decrypt those passwords. For LAPS v1 and unencrypted LAPS v2 passwords only `LDAP` is needed
 
 ## Setup (docker):
 
@@ -67,6 +67,70 @@ docker run -d \
 - Listen address and port: [Learn more](https://andrewlock.net/exploring-the-dotnet-8-preview-updates-to-docker-images-in-dotnet-8/)
 - Behind a reverse proxy: WebSocket support must be enabled!
 
+### 📝 Logging to file (Serilog)
+
+LAPS-WebUI uses **Serilog** for logging.
+By default, logs are written to the console only.
+
+#### Enable file logging
+
+To enable logging to files, extend your `appsettings.json` like this:
+
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning"
+      }
+    },
+    "WriteTo": [
+      { "Name": "Console" },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "Logs/laps-webui-.log",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 7
+        }
+      }
+    ],
+    "Enrich": [ "FromLogContext" ]
+  }
+}
+```
+
+#### Log file behavior
+
+- Log files are stored in the `Logs` directory
+- A new log file is created each day
+- Old log files are automatically deleted after the configured number of days
+
+#### Optional: limit file size
+
+You can also enable log rotation based on file size:
+
+```json
+"fileSizeLimitBytes": 10485760,
+"rollOnFileSizeLimit": true
+```
+
+#### Configure file logging via environment variables
+
+You can also configure Serilog using environment variables (useful for Docker or container setups):
+
+```bash
+SERILOG__WRITETO__0__NAME=Console
+SERILOG__WRITETO__1__NAME=File
+SERILOG__WRITETO__1__ARGS__PATH=Logs/laps-webui-.log
+SERILOG__WRITETO__1__ARGS__ROLLINGINTERVAL=Day
+SERILOG__WRITETO__1__ARGS__RETAINEDFILECOUNTLIMIT=7
+```
+
+Notes:
+- Double underscores (`__`) represent nested configuration levels
+- Array indices start at `0`
 
 ## 🧑‍💻 Usage
  - Access the app at: http://127.0.0.1:8080
