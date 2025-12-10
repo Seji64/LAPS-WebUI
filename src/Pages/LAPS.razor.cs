@@ -33,7 +33,7 @@ namespace LAPS_WebUI.Pages
             await InvokeAsync(StateHasChanged);
         }
 
-        private async Task OnSelectedItemChangedAsync(AdComputer value)
+        private async Task OnSelectedItemChangedAsync(AdComputer? value)
         {
             if (value != null && _autoCompleteSearchBox != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
             {
@@ -52,7 +52,7 @@ namespace LAPS_WebUI.Pages
 
                 if (tab != null && computer.LapsInformations != null)
                 {
-                    LAPSVersion version = tab.ActivePanel.ID.ToString() switch
+                    LAPSVersion version = tab.ActivePanel?.ID?.ToString() switch
                     {
                         "v1" => LAPSVersion.v1,
                         "v2" => LAPSVersion.v2,

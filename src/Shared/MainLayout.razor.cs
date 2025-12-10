@@ -34,7 +34,7 @@ namespace LAPS_WebUI.Shared
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            IsUserLoggedIn = await sessionManager.IsUserLoggedInAsync();
+            IsUserLoggedIn = await SessionManager.IsUserLoggedInAsync();
 
             if (firstRender)
             {

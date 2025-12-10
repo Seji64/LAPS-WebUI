@@ -189,7 +189,6 @@ namespace LAPS_WebUI.Services
 
                 if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == fieldName) && (domain.Laps.ForceVersion == LAPSVersion.All || domain.Laps.ForceVersion == LAPSVersion.v2))
                 {
-                    MsLapsPayload? msLapsPayload;
                     string ldapValue;
 
                     if (domain.Laps.EncryptionDisabled)
@@ -202,7 +201,7 @@ namespace LAPS_WebUI.Services
                         ldapValue = await DecryptLapsPayload(encryptedPass, ldapCredential);
                     }
 
-                    msLapsPayload = JsonSerializer.Deserialize<MsLapsPayload>(ldapValue) ?? throw new Exception("Failed to parse LAPS Password");
+                    MsLapsPayload msLapsPayload = JsonSerializer.Deserialize<MsLapsPayload>(ldapValue) ?? throw new Exception("Failed to parse LAPS Password");
 
                     LapsInformation lapsInformationEntry = new()
                     {
@@ -237,7 +236,7 @@ namespace LAPS_WebUI.Services
                                     Account = historicMsLapsPayload.ManagedAccountName,
                                     Password = historicMsLapsPayload.Password,
                                     PasswordExpireDate = null,
-                                    PasswordSetDate = DateTime.FromFileTimeUtc(Int64.Parse(historicMsLapsPayload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber)).ToLocalTime()
+                                    PasswordSetDate = DateTime.FromFileTimeUtc(long.Parse(historicMsLapsPayload.PasswordUpdateTime!, System.Globalization.NumberStyles.HexNumber)).ToLocalTime()
                                 };
 
                                 adComputer.LapsInformations.Add(historicLapsInformationEntry);
@@ -282,8 +281,10 @@ namespace LAPS_WebUI.Services
             {
 
                 Command pythonCmd = Cli.Wrap(pythonBin)
-                                .WithArguments($"\"{pythonDecryptScriptPath}\" --user \"{ldapCredential.UserName}\" --password \"{ldapCredential.Password}\" --data \"{Convert.ToBase64String(value)}\"")
-                                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult));
+                    .WithArguments(
+                        $"\"{pythonDecryptScriptPath}\" --user \"{ldapCredential.UserName}\" --password \"{ldapCredential.Password}\" --data \"{Convert.ToBase64String(value)}\"")
+                    .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult))
+                    .WithValidation(CommandResultValidation.ZeroExitCode);
 
                 await pythonCmd.ExecuteAsync();
 
@@ -317,7 +318,7 @@ namespace LAPS_WebUI.Services
             
             using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password);
             string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
-            string[] propertiesToLoad = new string[] { "cn", "distinguishedName" };
+            string[] propertiesToLoad = ["cn", "distinguishedName"];
             string? defaultNamingContext = domain.Ldap.SearchBase;
 
             try
