@@ -27,7 +27,7 @@ No additional user management is needed — access is fully controlled by Active
 ## 🛠 Requirements
 
 - Active Directory with Microsoft LAPS installed
-- .NET 9 runtime or a Docker host
+- .NET 10 runtime or a Docker host
 - Python 3 with `dpapi-ng` installed:
   ```bash
   pip install dpapi-ng[kerberos]
