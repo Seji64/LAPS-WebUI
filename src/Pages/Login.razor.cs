@@ -1,5 +1,6 @@
 ﻿using LAPS_WebUI.Models;
 using Microsoft.AspNetCore.Components.Forms;
+using Serilog;
 
 namespace LAPS_WebUI.Pages
 {
@@ -28,10 +29,12 @@ namespace LAPS_WebUI.Pages
             {
                 if (await SessionManager.LoginAsync(_loginRequest.DomainName ?? string.Empty, _loginRequest.Username ?? string.Empty, _loginRequest.Password ?? string.Empty))
                 {
+                    Log.ForContext("Audit",true).Information("User '{Username}'  successfully logged in.", _loginRequest.Username);
                     NavigationManager.NavigateTo("/laps");
                 }
                 else
                 {
+                    Log.ForContext("Audit",true).Warning("User '{Username}' failed logged in.", _loginRequest.Username);
                     throw new Exception("Login failed!");
                 }
             }

@@ -6,6 +6,8 @@
         {
             if (await SessionManager.IsUserLoggedInAsync())
             {
+                string username = await SessionManager.GetUsernameAsync();
+                Serilog.Log.Information("User logged out: {Username}", username);
                 await SessionManager.LogoutAsync();
             }
 

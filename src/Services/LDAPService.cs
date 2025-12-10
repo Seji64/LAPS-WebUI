@@ -139,6 +139,9 @@ namespace LAPS_WebUI.Services
             AdComputer? adComputer;
             Domain domain = _domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
+            Log.ForContext("Audit", true)
+               .Information("Retrieving Active Directory computer details for DN '{DistinguishedName}' using user '{Username}'", distinguishedName, ldapCredential.UserName);
+            
             if (ldapCredential is null)
             {
                 throw new Exception("Failed to get LDAP Credentials");
@@ -178,6 +181,9 @@ namespace LAPS_WebUI.Services
                         PasswordSetDate = null
                     };
 
+                    Log.ForContext("Audit", true)
+                        .Information("Successfully retrieved LAPS v1 password for computer '{ComputerName}' (DN: '{DistinguishedName}') by user '{Username}'", adComputer.Name, distinguishedName, ldapCredential.UserName);
+                    
                     adComputer.LapsInformations.Add(lapsInformationEntry);
                 }
 
@@ -217,6 +223,8 @@ namespace LAPS_WebUI.Services
                     };
 
                     adComputer.LapsInformations.Add(lapsInformationEntry);
+                    Log.ForContext("Audit", true)
+                        .Information("Successfully retrieved LAPS v2 password for computer '{ComputerName}' (DN: '{DistinguishedName}') by user '{Username}'", adComputer.Name, distinguishedName, ldapCredential.UserName);
 
                     if (ldapSearchResult.DirectoryAttributes.Any(x => x.Name == "msLAPS-EncryptedPasswordHistory"))
                     {
@@ -240,10 +248,13 @@ namespace LAPS_WebUI.Services
                                 };
 
                                 adComputer.LapsInformations.Add(historicLapsInformationEntry);
+                                Log.ForContext("Audit", true)
+                                    .Information("Successfully retrieved LAPS v2 password history for computer '{ComputerName}' (DN: '{DistinguishedName}') by user '{Username}'", adComputer.Name, distinguishedName, ldapCredential.UserName);
                             }
                             else
                             {
-                                Log.Warning("Failed to decrypt LAPS History entry");
+                                Log.ForContext("Audit", true)
+                                    .Warning("Failed decrypt LAPS v2 password history for computer '{ComputerName}' (DN: '{DistinguishedName}') by user '{Username}'", adComputer.Name, distinguishedName, ldapCredential.UserName);
                             }
                         }
                     }
@@ -300,9 +311,10 @@ namespace LAPS_WebUI.Services
             }
             catch (Exception ex)
             {
-                Log.Error("Decrypt LAPS Password failed. Please check if Domain Controllers are reachable and your python environment is setup correctly");
+                Log.ForContext("Audit", true)
+                    .Error("Failed to decrypt LAPS password on behalf for user '{Username}'", ldapCredential.UserName);
                 Log.Debug("Error Stacktrace => {ErrorMessage}", ex.Message);
-                throw new ArgumentException("Failed to decrypt LAPSv2 Password");
+                throw new ArgumentException("Decrypt LAPS Password failed. Please check if Domain Controllers are reachable and your python environment is setup correctly");
             }
 
         }

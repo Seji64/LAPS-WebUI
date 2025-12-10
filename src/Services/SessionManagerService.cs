@@ -10,6 +10,12 @@ namespace LAPS_WebUI.Services
         ICryptService cryptService)
         : ISessionManagerService
     {
+
+        public async Task<string> GetUsernameAsync()
+        {
+            return await sessionStorageService.GetItemAsync<string>("username");
+        }
+        
         public async Task<List<string>> GetDomainsAsync()
         {
             return (await ldapService.GetDomainsAsync()).Select(x => x.Name).ToList();
@@ -43,14 +49,13 @@ namespace LAPS_WebUI.Services
             {
                 return false;
             }
-            else
-            {
-                await sessionStorageService.SetItemAsync("loggedIn", bindResult);
-                await sessionStorageService.SetItemAsync("domainName", domainName);
-                await sessionStorageService.SetItemAsync("ldapCredentials", new LdapCredential() { UserName = cryptService.EncryptString(username), Password = cryptService.EncryptString(password) });
 
-                return true;
-            }
+            await sessionStorageService.SetItemAsync("loggedIn", bindResult);
+            await sessionStorageService.SetItemAsync("username", username);
+            await sessionStorageService.SetItemAsync("domainName", domainName);
+            await sessionStorageService.SetItemAsync("ldapCredentials", new LdapCredential() { UserName = cryptService.EncryptString(username), Password = cryptService.EncryptString(password) });
+
+            return true;
         }
         public async Task<bool> LogoutAsync()
         {

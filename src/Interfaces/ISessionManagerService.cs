@@ -8,5 +8,7 @@
         public Task<LdapForNet.LdapCredential> GetLdapCredentialsAsync();
         public Task<List<string>> GetDomainsAsync();
         public Task<string> GetDomainAsync();
+        public Task<string> GetUsernameAsync();
+
     }
 }

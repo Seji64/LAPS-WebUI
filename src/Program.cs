@@ -1,6 +1,7 @@
 using Blazored.SessionStorage;
 using CurrieTechnologies.Razor.Clipboard;
 using LAPS_WebUI.Interfaces;
+using LAPS_WebUI.LogEnrichers;
 using LAPS_WebUI.Models;
 using LAPS_WebUI.Services;
 using MudBlazor;
@@ -17,6 +18,8 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddSerilog((services, lc) => lc
     .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.With<AuditPrefixEnricher>()
+    .Enrich.FromLogContext()
     .ReadFrom.Services(services));
 
 builder.Services.AddRazorPages();

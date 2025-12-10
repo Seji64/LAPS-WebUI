@@ -59,7 +59,7 @@ namespace LAPS_WebUI.Pages
                         _ => LAPSVersion.v1
                     };
 
-                    DialogParameters parameters = new DialogParameters { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
+                    DialogParameters parameters = new() { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
                     IDialogReference dialog = await Dialog.ShowAsync<Confirmation>("Clear LAPS Password", parameters,new DialogOptions() { NoHeader = true });
                     DialogResult? result = await dialog.Result;
 
@@ -68,7 +68,10 @@ namespace LAPS_WebUI.Pages
                         computer.LapsInformations.Clear();
                         await InvokeAsync(StateHasChanged);
                         await LdapService.ClearLapsPassword(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version);
-                        Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke gpupdate on {computer.Name} to set a new LAPS Password", Severity.Success);
+                        Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
+                        string currentUsername = await SessionManager.GetUsernameAsync();
+                        Log.ForContext("Audit", true)
+                            .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, currentUsername);
                     }
                 }
             }
@@ -118,10 +121,7 @@ namespace LAPS_WebUI.Pages
             {
                 Log.Error("{ErrorMessage}", ex.Message);
 
-                if (placeHolder != null)
-                {
-                    placeHolder.LapsInformations = backup;
-                }
+                placeHolder?.LapsInformations = backup;
 
                 if (!supressNotify)
                 {
@@ -157,7 +157,7 @@ namespace LAPS_WebUI.Pages
                     if (!selectedComputer.FailedToRetrieveLapsDetails && tab != null)
                     {
                         await InvokeAsync(StateHasChanged);
-                        tab.ActivatePanel(tab.Panels.First(x => !x.Disabled));
+                        await tab.ActivatePanelAsync(tab.Panels.First(x => !x.Disabled));
                     }
 
                 }
