@@ -67,12 +67,21 @@ namespace LAPS_WebUI.Pages
                     {
                         computer.LapsInformations.Clear();
                         await InvokeAsync(StateHasChanged);
-                        await LdapService.ClearLapsPassword(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName, version);
-                        Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
-                        string currentUsername = await SessionManager.GetUsernameAsync();
-                        Log.ForContext("Audit", true)
-                            .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, currentUsername);
+                        if (await LdapService.ClearLapsPassword(DomainName ?? await SessionManager.GetDomainAsync(),
+                                LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(),
+                                computer.DistinguishedName, version))
+                        {
+                            Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
+                            string currentUsername = await SessionManager.GetUsernameAsync();
+                            Log.ForContext("Audit", true)
+                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, currentUsername);
+                        }
+                        else
+                        {
+                            throw new Exception($"Failed to reset LAPS password for computer {computer.Name}");
+                        }
                     }
+
                 }
             }
             catch (Exception ex)

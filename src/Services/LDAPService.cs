@@ -87,7 +87,7 @@ namespace LAPS_WebUI.Services
                 _ => string.Empty
             };
 
-            DirectoryModificationAttribute resetRequest = new DirectoryModificationAttribute
+            DirectoryModificationAttribute resetRequest = new()
             {
                 LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
                 Name = attribute
