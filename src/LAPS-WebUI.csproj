@@ -20,21 +20,21 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
-    <PackageReference Include="CliWrap" Version="3.10.0" />
-    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="8.3.0" />
+    <PackageReference Include="CliWrap" Version="3.10.1" />
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="9.1.0" />
     <PackageReference Include="CurrieTechnologies.Razor.Clipboard" Version="1.6.0" />
     <PackageReference Include="LdapForNet" Version="2.7.15" />
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.7" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
-    <PackageReference Include="MudBlazor" Version="8.15.0" />
-    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="MudBlazor" Version="9.4.0" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.1" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
