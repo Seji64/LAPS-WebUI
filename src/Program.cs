@@ -6,6 +6,7 @@ using LAPS_WebUI.Models;
 using LAPS_WebUI.Services;
 using MudBlazor;
 using MudBlazor.Services;
+using MudExtensions.Services;
 using Serilog;
 using Serilog.Events;
 
@@ -31,6 +32,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.NewestOnTop = true;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+builder.Services.AddMudExtensions();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddClipboard();
 builder.Services.AddDataProtection();

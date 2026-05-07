@@ -172,6 +172,7 @@ namespace LAPS_WebUI.Services
                 {
                     LapsInformation lapsInformationEntry = new()
                     {
+                        DomainName =  domain.Name,
                         ComputerName = adComputer.Name,
                         Version = LAPSVersion.v1,
                         Account = null,
@@ -211,6 +212,7 @@ namespace LAPS_WebUI.Services
 
                     LapsInformation lapsInformationEntry = new()
                     {
+                        DomainName =  domain.Name,
                         ComputerName = adComputer.Name,
                         Version = LAPSVersion.v2,
                         Account = msLapsPayload.ManagedAccountName,
@@ -239,6 +241,7 @@ namespace LAPS_WebUI.Services
                             {
                                 LapsInformation historicLapsInformationEntry = new()
                                 {
+                                    DomainName =  domain.Name,
                                     ComputerName = adComputer.Name,
                                     Version = LAPSVersion.v2,
                                     Account = historicMsLapsPayload.ManagedAccountName,
@@ -299,7 +302,7 @@ namespace LAPS_WebUI.Services
 
                 await pythonCmd.ExecuteAsync();
 
-                if (pythonDecryptScriptPath is null || pythonDecryptScriptPath.Length == 0)
+                if (string.IsNullOrEmpty(pythonDecryptScriptPath))
                 {
                     throw new Exception("Failed to decrypt laps password!");
                 }

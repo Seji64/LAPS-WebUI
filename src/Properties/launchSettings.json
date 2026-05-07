@@ -24,7 +24,8 @@
         "Domains__0__Ldap__Port": "636",
         "Domains__0__Ldap__UseSSL": "true",
         "Domains__0__Ldap__SearchBase": "OU=Klett IT GmbH,DC=prime,DC=k-sys,DC=io",
-        " Domains__0__Ldap__TrustAllCertificates": "true"
+        "Domains__0__Ldap__TrustAllCertificates": "true",
+        "Domains__0__Laps__DateDisplayFormat": "yyyy-MM-dd HH:mm:ss"
       },
       "applicationUrl": "https://localhost:7213;http://localhost:5213",
       "dotnetRunMessages": true

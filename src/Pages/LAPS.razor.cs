@@ -38,7 +38,7 @@ namespace LAPS_WebUI.Pages
             if (value != null && _autoCompleteSearchBox != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
             {
                 await _autoCompleteSearchBox.ClearAsync();
-                _mudTabsDict.Add(value.Name, null);
+                //_mudTabsDict.Add(value.Name, null);
                 await FetchComputerDetailsAsync(value.DistinguishedName, value.Name);
             }
         }
@@ -185,7 +185,7 @@ namespace LAPS_WebUI.Pages
             SelectedComputers.RemoveAll(x => x.Name == computerName);
         }
 
-        private async Task<IEnumerable<AdComputer>> SearchAsync(string value,CancellationToken token)
+        private async Task<IEnumerable<AdComputer>> SearchAsync(string? value,CancellationToken token)
         {
             List<AdComputer> searchResult = [];
             if (string.IsNullOrEmpty(value))

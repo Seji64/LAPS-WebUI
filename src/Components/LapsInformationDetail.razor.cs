@@ -9,13 +9,19 @@ namespace LAPS_WebUI.Components
         [Parameter] public LapsInformation? LapsInfo { get; set; }
         [Parameter] public MudTabs? MudTab { get; set; }
         private bool IsCopyToClipboardSupported { get; set; }
-
+        private List<Domain> domains = [];
+        
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
                 IsCopyToClipboardSupported = await Clipboard.IsSupportedAsync();
             }
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            domains = await LdapService.GetDomainsAsync();
         }
 
         private bool IsCopyButtonDisabled()
@@ -33,6 +39,12 @@ namespace LAPS_WebUI.Components
             {
                 Snackbar.Add("Failed to copy password to clipboard!", Severity.Error);
             }
+        }
+
+        private string GetLapsDateDisplayFormat(DateTime? date)
+        { 
+            string format = domains.Single(x => x.Name == LapsInfo!.DomainName).Laps.DateDisplayFormat;
+            return date.HasValue ? date.Value.ToString(format) : string.Empty;
         }
     }
 }

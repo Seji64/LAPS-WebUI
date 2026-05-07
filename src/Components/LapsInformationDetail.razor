@@ -2,12 +2,13 @@
 @inject ISnackbar Snackbar
 @inject ClipboardService Clipboard
 @using CurrieTechnologies.Razor.Clipboard
+@inject ILdapService LdapService
 
 @if (LapsInfo != null)
 {
     <MudStack Spacing="2">
 
-        <MudTextFieldExtended T="string" Label="Password" Variant="Variant.Text" InputMode="InputMode.none" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password" Text="@LapsInfo.Password" ReadOnly="true">
+        <MudTextFieldExtended T="string" Label="Password" Variant="Variant.Text" InputType="InputType.Text" InputMode="InputMode.none" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Password" AdornmentColor="Color.Default" aria-label="LAPS Password" Text="@LapsInfo.Password" ReadOnly="true">
             <AdornmentStart>
                 <MudIcon Icon="@Icons.Material.Outlined.Password" />
             </AdornmentStart>
@@ -24,8 +25,8 @@
         }
         @if (LapsInfo.PasswordSetDate != null)
         {
-            <MudTextField T="string" ReadOnly="true" Label="Set Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.MoreTime" AdornmentColor="Color.Default" aria-label="LAPS Password Set Date" Text="@LapsInfo.PasswordSetDate.ToString()"/>
+            <MudTextField T="string" ReadOnly="true" Label="Set Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.MoreTime" AdornmentColor="Color.Default" aria-label="LAPS Password Set Date" Text="@GetLapsDateDisplayFormat(LapsInfo.PasswordSetDate)"/>
         }
-        <MudTextField T="string" ReadOnly="true" Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date" Text="@LapsInfo.PasswordExpireDate.ToString()"/>
+        <MudTextField T="string" ReadOnly="true" Label="Expire Date" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.HourglassBottom" AdornmentColor="Color.Default" aria-label="LAPS Password Expire Date" Text="@GetLapsDateDisplayFormat(LapsInfo.PasswordExpireDate)"/>
     </MudStack>
 }

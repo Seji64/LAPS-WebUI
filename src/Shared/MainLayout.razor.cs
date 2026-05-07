@@ -38,7 +38,7 @@ namespace LAPS_WebUI.Shared
 
             if (firstRender)
             {
-                _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+                _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
             }
 
             await InvokeAsync(StateHasChanged);

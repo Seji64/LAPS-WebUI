@@ -27,7 +27,8 @@
       },
       "Laps": {
         "ForceVersion": "All", // Allowed Values: All, v1, v2 | Default: All (v1 & v2)
-        "EncryptionDisabled": false // Allowed Values: true, false | Default: false
+        "EncryptionDisabled": false, // Allowed Values: true, false | Default: false
+        "DateDisplayFormat": "yyyy-MM-dd HH:mm:ss" //Default: dd.MM.yyyy HH:mm:ss
       }
     },
     {

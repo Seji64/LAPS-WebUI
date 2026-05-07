@@ -8,5 +8,7 @@ namespace LAPS_WebUI.Models
         [JsonConverter(typeof(JsonStringEnumMemberConverter))]
         public LAPSVersion ForceVersion { get; set; } = LAPSVersion.All;
         public bool EncryptionDisabled { get; set; }
+        
+        public string DateDisplayFormat { get; set; } = "dd.MM.yyyy HH:mm:ss";
     }
 }

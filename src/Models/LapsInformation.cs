@@ -4,6 +4,7 @@ namespace LAPS_WebUI.Models
 {
     public class LapsInformation
     {
+        public required string DomainName { get; set; }
         public required string ComputerName { get; set; }
         public string? Password { get; set; }
         public string? Account { get; set; }
