@@ -1,4 +1,4 @@
-﻿using LAPS_WebUI.Models;
+using LAPS_WebUI.Models;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -8,20 +8,17 @@ namespace LAPS_WebUI.Components
     {
         [Parameter] public LapsInformation? LapsInfo { get; set; }
         [Parameter] public MudTabs? MudTab { get; set; }
+        [Parameter] public string DateDisplayFormat { get; set; } = "dd.MM.yyyy HH:mm:ss";
         private bool IsCopyToClipboardSupported { get; set; }
-        private List<Domain> domains = [];
-        
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
                 IsCopyToClipboardSupported = await Clipboard.IsSupportedAsync();
             }
-        }
 
-        protected override async Task OnInitializedAsync()
-        {
-            domains = await LdapService.GetDomainsAsync();
+            await InvokeAsync(StateHasChanged);
         }
 
         private bool IsCopyButtonDisabled()
@@ -42,9 +39,8 @@ namespace LAPS_WebUI.Components
         }
 
         private string GetLapsDateDisplayFormat(DateTime? date)
-        { 
-            string format = domains.Single(x => x.Name == LapsInfo!.DomainName).Laps.DateDisplayFormat;
-            return date.HasValue ? date.Value.ToString(format) : string.Empty;
+        {
+            return date?.ToString(DateDisplayFormat) ?? string.Empty;
         }
     }
 }

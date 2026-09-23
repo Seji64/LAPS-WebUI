@@ -1,9 +1,8 @@
-﻿using LAPS_WebUI.Interfaces;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace LAPS_WebUI.Services
 {
-    public class CryptService(IDataProtectionProvider dataProtectionProvider) : ICryptService
+    public class CryptService(IDataProtectionProvider dataProtectionProvider)
     {
         private readonly string _keyString = Guid.NewGuid().ToString().Replace("-", "");
 

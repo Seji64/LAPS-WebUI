@@ -1,24 +1,22 @@
-﻿using Blazored.SessionStorage;
-using LAPS_WebUI.Interfaces;
+using Blazored.SessionStorage;
 using LdapForNet;
 
 namespace LAPS_WebUI.Services
 {
     public class SessionManagerService(
         ISessionStorageService sessionStorageService,
-        ILdapService ldapService,
-        ICryptService cryptService)
-        : ISessionManagerService
+        LdapService ldapService,
+        CryptService cryptService)
     {
 
         public async Task<string> GetUsernameAsync()
         {
             return await sessionStorageService.GetItemAsync<string>("username");
         }
-        
-        public async Task<List<string>> GetDomainsAsync()
+
+        public List<string> GetDomains()
         {
-            return (await ldapService.GetDomainsAsync()).Select(x => x.Name).ToList();
+            return ldapService.GetDomains().Select(x => x.Name).ToList();
         }
 
         public async Task<string> GetDomainAsync()
@@ -43,14 +41,12 @@ namespace LAPS_WebUI.Services
 
         public async Task<bool> LoginAsync(string domainName, string username, string password)
         {
-            bool bindResult = await ldapService.TestCredentialsAsync(domainName,username, password);
-
-            if (!bindResult)
+            if (!await ldapService.TestCredentialsAsync(domainName, username, password))
             {
                 return false;
             }
 
-            await sessionStorageService.SetItemAsync("loggedIn", bindResult);
+            await sessionStorageService.SetItemAsync("loggedIn", true);
             await sessionStorageService.SetItemAsync("username", username);
             await sessionStorageService.SetItemAsync("domainName", domainName);
             await sessionStorageService.SetItemAsync("ldapCredentials", new LdapCredential() { UserName = cryptService.EncryptString(username), Password = cryptService.EncryptString(password) });

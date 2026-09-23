@@ -1,7 +1,7 @@
-﻿@page "/laps"
-@inject ISessionManagerService SessionManager
+@page "/laps"
+@inject SessionManagerService SessionManager
 @inject NavigationManager NavigationManager
-@inject ILdapService LdapService
+@inject LdapService LdapService
 @inject ISnackbar Snackbar
 @inject IDialogService Dialog
 
@@ -63,10 +63,10 @@
                                 {
                                     <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" TabPanelsClass="pa-4" @key="computer.Name" @ref="_mudTabsDict[computer.Name]">
                                         <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v1, IsCurrent: true }))>
-                                            <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)"/>
+                                            <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)" DateDisplayFormat="@DateDisplayFormat"/>
                                         </MudTabPanel>
                                         <MudTabPanel Icon="@Icons.Material.Outlined.Filter2" ID="@("v2")" Text="v2" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true }))>
-                                            <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true })"/>
+                                            <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: true })" DateDisplayFormat="@DateDisplayFormat"/>
                                         </MudTabPanel>
                                         <MudTabPanel Icon="@Icons.Material.Outlined.History" ID="@("history")" Text="History" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v2, IsCurrent: false }))>
                                             <MudSimpleTable Style="overflow-x: auto;" Dense="true" Hover="true" Striped="true">

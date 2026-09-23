@@ -1,6 +1,5 @@
 using Blazored.SessionStorage;
 using CurrieTechnologies.Razor.Clipboard;
-using LAPS_WebUI.Interfaces;
 using LAPS_WebUI.LogEnrichers;
 using LAPS_WebUI.Models;
 using LAPS_WebUI.Services;
@@ -25,6 +24,7 @@ builder.Services.AddSerilog((services, lc) => lc
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddMudExtensions();
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomCenter;
@@ -32,16 +32,15 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.NewestOnTop = true;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
-builder.Services.AddMudExtensions();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddClipboard();
 builder.Services.AddDataProtection();
 builder.Services.AddHealthChecks();
 
 builder.Services.Configure<List<Domain>>(builder.Configuration.GetSection("Domains"));
-builder.Services.AddScoped<ILdapService, LdapService>();
-builder.Services.AddScoped<ISessionManagerService, SessionManagerService>();
-builder.Services.AddSingleton<ICryptService, CryptService>();
+builder.Services.AddScoped<LdapService>();
+builder.Services.AddScoped<SessionManagerService>();
+builder.Services.AddSingleton<CryptService>();
 
 WebApplication app = builder.Build();
 

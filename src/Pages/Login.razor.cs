@@ -1,4 +1,4 @@
-﻿using LAPS_WebUI.Models;
+using LAPS_WebUI.Models;
 using Microsoft.AspNetCore.Components.Forms;
 using Serilog;
 
@@ -11,11 +11,11 @@ namespace LAPS_WebUI.Pages
         private string _errorMessage = string.Empty;
         private List<string> _domains = [];
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
-            _domains = await SessionManager.GetDomainsAsync();
+            _domains = SessionManager.GetDomains();
 
-            if (_domains.Count > 0 )
+            if (_domains.Count > 0)
             {
                 _loginRequest.DomainName = _domains[0];
             }
@@ -35,7 +35,7 @@ namespace LAPS_WebUI.Pages
                 else
                 {
                     Log.ForContext("Audit",true).Warning("User '{Username}' failed logged in.", _loginRequest.Username);
-                    throw new Exception("Login failed!");
+                    _errorMessage = "Login failed!";
                 }
             }
             catch (Exception ex)

@@ -12,8 +12,7 @@
           "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {AuditPrefix}{Message:lj}{NewLine}{Exception}"
         }
       }
-    ],
-    "Enrich": [ "FromLogContext", "WithAuditPrefix"]
+    ]
   },
   "Domains": [
     {

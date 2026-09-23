@@ -1,4 +1,4 @@
-﻿using LAPS_WebUI.Dialogs;
+using LAPS_WebUI.Dialogs;
 using LAPS_WebUI.Enums;
 using LAPS_WebUI.Models;
 using MudBlazor;
@@ -10,11 +10,11 @@ namespace LAPS_WebUI.Pages
     {
         private readonly Dictionary<string, MudTabs?> _mudTabsDict = [];
         private MudAutocomplete<AdComputer>? _autoCompleteSearchBox;
-        private bool _disposedValue;
         private bool Authenticated { get; set; } = true;
         private LdapForNet.LdapCredential? LdapCredential { get; set; }
         private List<AdComputer> SelectedComputers { get; set; } = [];
         private string? DomainName { get; set; }
+        private string DateDisplayFormat { get; set; } = "dd.MM.yyyy HH:mm:ss";
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -29,6 +29,7 @@ namespace LAPS_WebUI.Pages
                 {
                     LdapCredential = await SessionManager.GetLdapCredentialsAsync();
                     DomainName = await SessionManager.GetDomainAsync();
+                    DateDisplayFormat = LdapService.GetDomains().Single(d => d.Name == DomainName).Laps.DateDisplayFormat;
                 }
 
                 StateHasChanged();
@@ -40,7 +41,6 @@ namespace LAPS_WebUI.Pages
             if (value != null && _autoCompleteSearchBox != null && !string.IsNullOrEmpty(value.Name) && !SelectedComputers.Exists(x => x.Name == value.Name))
             {
                 await _autoCompleteSearchBox.ClearAsync();
-                //_mudTabsDict.Add(value.Name, null);
                 await FetchComputerDetailsAsync(value.DistinguishedName, value.Name);
             }
         }
@@ -61,16 +61,19 @@ namespace LAPS_WebUI.Pages
                         _ => LAPSVersion.v1
                     };
 
-                    DialogParameters parameters = new() { ["ContentText"] = $"Clear LAPS {version} Password on Computer '{computer.Name}' ?{Environment.NewLine}You have to invoke gpupdate /force on computer '{computer.Name}' in order so set a new LAPS password", ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
-                    IDialogReference dialog = await Dialog.ShowAsync<Confirmation>("Clear LAPS Password", parameters,new DialogOptions() { NoHeader = true });
+                    DialogParameters parameters = new() { ["ContentText"] = $"""
+                        Clear LAPS {version} Password on Computer <code>{computer.Name}</code>?
+                        <p>You have to invoke '<code>gpupdate /force</code>' on <code>{computer.Name}</code> in order to set a new LAPS password.</p>
+                        """, ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
+                    IDialogReference dialog = await Dialog.ShowAsync<Confirmation>("Clear LAPS Password", parameters,new DialogOptions());
                     DialogResult? result = await dialog.Result;
 
                     if(result is { Canceled: false })
                     {
                         computer.LapsInformations.Clear();
                         await InvokeAsync(StateHasChanged);
-                        if (await LdapService.ClearLapsPassword(DomainName ?? await SessionManager.GetDomainAsync(),
-                                LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(),
+                        if (await LdapService.ClearLapsPassword(DomainName!,
+                                LdapCredential!,
                                 computer.DistinguishedName, version))
                         {
                             Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
@@ -115,7 +118,7 @@ namespace LAPS_WebUI.Pages
                 placeHolder.LapsInformations = null;
                 await InvokeAsync(StateHasChanged);
 
-                AdComputer? tmp = await LdapService.GetAdComputerAsync(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), computer.DistinguishedName);
+                AdComputer? tmp = await LdapService.GetAdComputerAsync(DomainName!, LdapCredential!, computer.DistinguishedName);
 
                 if (tmp != null)
                 {
@@ -154,7 +157,7 @@ namespace LAPS_WebUI.Pages
                 SelectedComputers.Add(placeHolder);
                 await InvokeAsync(StateHasChanged);
 
-                AdComputer? adComputerObject = await LdapService.GetAdComputerAsync(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), distinguishedName);
+                AdComputer? adComputerObject = await LdapService.GetAdComputerAsync(DomainName!, LdapCredential!, distinguishedName);
                 AdComputer? selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
 
                 if (adComputerObject != null && selectedComputer != null)
@@ -187,37 +190,16 @@ namespace LAPS_WebUI.Pages
             SelectedComputers.RemoveAll(x => x.Name == computerName);
         }
 
-        private async Task<IEnumerable<AdComputer>> SearchAsync(string? value,CancellationToken token)
+        private async Task<IEnumerable<AdComputer>> SearchAsync(string? value, CancellationToken token)
         {
-            List<AdComputer> searchResult = [];
             if (string.IsNullOrEmpty(value))
             {
                 return [];
             }
-            List<AdComputer> tmp = await LdapService.SearchAdComputersAsync(DomainName ?? await SessionManager.GetDomainAsync(), LdapCredential ?? await SessionManager.GetLdapCredentialsAsync(), value);
-            searchResult.AddRange(tmp);
-            return searchResult;
+            return await LdapService.SearchAdComputersAsync(DomainName!, LdapCredential!, value);
 
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            // check if already disposed
-            if (_disposedValue) return;
-            if (disposing)
-            {
-                // free managed objects here
-                SelectedComputers.Clear();
-            }
-            
-            // set the bool value to true
-            _disposedValue = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+        public void Dispose() => SelectedComputers.Clear();
     }
 }

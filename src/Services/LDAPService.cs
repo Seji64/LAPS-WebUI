@@ -1,6 +1,5 @@
-﻿using CliWrap;
+using CliWrap;
 using LAPS_WebUI.Enums;
-using LAPS_WebUI.Interfaces;
 using LAPS_WebUI.Models;
 using LdapForNet;
 using Microsoft.Extensions.Options;
@@ -12,7 +11,7 @@ using static LdapForNet.Native.Native;
 
 namespace LAPS_WebUI.Services
 {
-    public class LdapService : ILdapService
+    public class LdapService
     {
         private readonly IOptions<List<Domain>> _domains;
         public LdapService(IOptions<List<Domain>> domains)
@@ -25,12 +24,12 @@ namespace LAPS_WebUI.Services
             }
         }
 
-        public async Task<List<Domain>> GetDomainsAsync()
+        public List<Domain> GetDomains()
         {
-            return await Task.FromResult(_domains.Value);
+            return _domains.Value;
         }
 
-        public async Task<LdapConnection?> CreateBindAsync(string domainName, string username, string password)
+        private async Task<LdapConnection?> CreateBindAsync(string domainName, string username, string password)
         {
             LdapConnection ldapConnection = new();
 
@@ -62,12 +61,6 @@ namespace LAPS_WebUI.Services
         public async Task<bool> TestCredentialsAsync(string domainName, string username, string password)
         {
             using LdapConnection? connection = await CreateBindAsync(domainName, username, password);
-            return connection != null;
-        }
-
-        public async Task<bool> TestCredentialsAsync(string domainName, LdapCredential ldapCredential)
-        {
-            using LdapConnection? connection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password);
             return connection != null;
         }
 
@@ -325,14 +318,13 @@ namespace LAPS_WebUI.Services
 
         public async Task<List<AdComputer>> SearchAdComputersAsync(string domainName, LdapCredential ldapCredential, string query)
         {
-            List<AdComputer> result = [];
             Domain domain = _domains.Value.SingleOrDefault(x => x.Name == domainName) ?? throw new Exception($"No configured domain found with name {domainName}");
 
             if (ldapCredential is null)
             {
                 throw new Exception("Failed to get LDAP Credentials");
             }
-            
+
             using LdapConnection? ldapConnection = await CreateBindAsync(domainName, ldapCredential.UserName, ldapCredential.Password);
             string filter = $"(&(objectCategory=computer)(name={query}{(query.EndsWith('*') ? string.Empty : '*')}))";
             string[] propertiesToLoad = ["cn", "distinguishedName"];
@@ -347,14 +339,13 @@ namespace LAPS_WebUI.Services
 
                 IList<LdapEntry>? ldapSearchResults = await ldapConnection.SearchAsync(defaultNamingContext, filter, propertiesToLoad);
 
-                result.AddRange(ldapSearchResults.Select(o => new AdComputer(EscapeLdapSearchFilter(o.Dn), o.DirectoryAttributes["cn"].GetValues<string>().First())).ToList());
+                return ldapSearchResults.Select(o => new AdComputer(EscapeLdapSearchFilter(o.Dn), o.DirectoryAttributes["cn"].GetValues<string>().First())).ToList();
             }
             catch (Exception ex)
             {
                 Log.Error("{ErrorMessage}", ex.Message);
+                return [];
             }
-
-            return result;
         }
     }
 }
