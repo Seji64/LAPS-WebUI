@@ -296,7 +296,8 @@ namespace LAPS_WebUI.Services
 
                 Command pythonCmd = Cli.Wrap(pythonBin)
                     .WithArguments(
-                        $"\"{pythonDecryptScriptPath}\" --user \"{ldapCredential.UserName}\" --password \"{ldapCredential.Password}\" --data \"{Convert.ToBase64String(value)}\"")
+                        $"\"{pythonDecryptScriptPath}\" --data \"{Convert.ToBase64String(value)}\"")
+                    .WithStandardInputPipe(PipeSource.FromString($"{ldapCredential.UserName}\n{ldapCredential.Password}\n"))
                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(pythonScriptResult))
                     .WithValidation(CommandResultValidation.ZeroExitCode);
 
