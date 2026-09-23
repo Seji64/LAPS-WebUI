@@ -17,20 +17,22 @@ namespace LAPS_WebUI.Pages
         private string? DomainName { get; set; }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            Authenticated = await SessionManager.IsUserLoggedInAsync();
-
-            if (!Authenticated)
+            if (firstRender)
             {
-                NavigationManager.NavigateTo("/login");
-            }
+                Authenticated = await SessionManager.IsUserLoggedInAsync();
 
-            if (firstRender && Authenticated)
-            {
-                LdapCredential = await SessionManager.GetLdapCredentialsAsync();
-                DomainName = await SessionManager.GetDomainAsync();
-            }
+                if (!Authenticated)
+                {
+                    NavigationManager.NavigateTo("/login");
+                }
+                else
+                {
+                    LdapCredential = await SessionManager.GetLdapCredentialsAsync();
+                    DomainName = await SessionManager.GetDomainAsync();
+                }
 
-            await InvokeAsync(StateHasChanged);
+                StateHasChanged();
+            }
         }
 
         private async Task OnSelectedItemChangedAsync(AdComputer? value)
