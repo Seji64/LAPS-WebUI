@@ -61,7 +61,7 @@
                                 <MudLoading Loading="@computer.Loading" LoaderType="LoaderType.Circular">
                                 @if (!computer.FailedToRetrieveLapsDetails)
                                 {
-                                    <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" PanelClass="pa-4" @key="computer.Name" @ref="_mudTabsDict[computer.Name]">
+                                    <MudTabs Position="Position.Top" Rounded="true" Border="false" ApplyEffectsToContainer="true" TabPanelsClass="pa-4" @key="computer.Name" @ref="_mudTabsDict[computer.Name]">
                                         <MudTabPanel Icon="@Icons.Material.Outlined.Filter1" ID="@("v1")" Text="v1" Disabled=@(!computer.LapsInformations!.Any(x => x is { Version: Enums.LAPSVersion.v1, IsCurrent: true }))>
                                             <LapsInformationDetail LapsInfo="computer.LapsInformations!.SingleOrDefault(x => x.Version == Enums.LAPSVersion.v1)"/>
                                         </MudTabPanel>
