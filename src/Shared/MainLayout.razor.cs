@@ -3,7 +3,7 @@ using MudBlazor;
 
 namespace LAPS_WebUI.Shared
 {
-    public partial class MainLayout
+    public partial class MainLayout : IDisposable
     {
 
         private bool _isDarkMode;
@@ -32,17 +32,32 @@ namespace LAPS_WebUI.Shared
             NavigationManager.NavigateTo("/logout");
         }
 
+        protected override void OnInitialized()
+        {
+            NavigationManager.LocationChanged += OnLocationChanged;
+        }
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            IsUserLoggedIn = await SessionManager.IsUserLoggedInAsync();
-
             if (firstRender)
             {
+                IsUserLoggedIn = await SessionManager.IsUserLoggedInAsync();
                 _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+                StateHasChanged();
             }
 
-            await InvokeAsync(StateHasChanged);
             await base.OnAfterRenderAsync(firstRender);
+        }
+
+        private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        {
+            IsUserLoggedIn = await SessionManager.IsUserLoggedInAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+
+        public void Dispose()
+        {
+            NavigationManager.LocationChanged -= OnLocationChanged;
         }
     }
 }
