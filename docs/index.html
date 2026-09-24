@@ -28,6 +28,8 @@
             line-height: 1.6;
         }
         .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+        /* Hero */
         .hero {
             background: linear-gradient(135deg, #1a237e 0%, #1976D2 100%);
             color: white;
@@ -37,35 +39,86 @@
         .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
         .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 28px; }
         .badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
-        .badge { display: inline-block; background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
         .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: transform 0.15s, box-shadow 0.15s; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 24px; border-radius: var(--radius);
+            text-decoration: none; font-weight: 600; font-size: 0.95rem;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
         .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .btn-primary { background: white; color: var(--primary-dark); }
         .btn-outline { border: 2px solid rgba(255,255,255,0.5); color: white; }
         .btn-outline:hover { border-color: white; }
+
+        /* Sections */
         section { padding: 60px 0; }
         section:nth-child(even) { background: var(--surface); }
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.3px; }
         h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
+
+        /* Feature grid */
         .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 32px; }
-        .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: box-shadow 0.2s; }
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: box-shadow 0.2s;
+        }
         .feature-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
         .feature-icon { font-size: 2rem; margin-bottom: 12px; }
+
+        /* Screenshots */
         .screenshots { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-top: 32px; }
         .screenshot { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: #eee; }
         .screenshot img { width: 100%; height: auto; display: block; }
         .screenshot figcaption { padding: 12px; font-size: 0.85rem; color: var(--text-secondary); text-align: center; background: var(--surface); }
-        pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; overflow-x: auto; font-size: 0.85rem; line-height: 1.7; }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
         code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; }
+
+        /* Requirements list */
         .req-list { list-style: none; padding: 0; }
-        .req-list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; }
+        .req-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: flex-start; gap: 10px;
+        }
         .req-list li:last-child { border-bottom: none; }
         .check { color: var(--success); font-weight: bold; flex-shrink: 0; }
-        footer { background: #263238; color: rgba(255,255,255,0.7); padding: 40px 0; text-align: center; font-size: 0.9rem; }
+
+        /* Footer */
+        footer {
+            background: #263238;
+            color: rgba(255,255,255,0.7);
+            padding: 40px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
         footer a { color: rgba(255,255,255,0.9); }
         footer .footer-links { margin-top: 12px; }
         footer .footer-links a { margin: 0 12px; }
+
+        /* Responsive */
         @media (max-width: 640px) {
             .hero { padding: 48px 0 36px; }
             .hero h1 { font-size: 1.8rem; }
@@ -76,6 +129,7 @@
 </head>
 <body>
 
+    <!-- Hero -->
     <div class="hero">
         <div class="container">
             <div class="badge-row">
@@ -87,12 +141,17 @@
             <h1>LAPS-WebUI</h1>
             <p>A modern web interface for Microsoft LAPS — view and manage local administrator passwords across your Active Directory domains.</p>
             <div class="hero-buttons">
-                <a class="btn btn-primary" href="https://github.com/Seji64/LAPS-WebUI" target="_blank" rel="noopener">⭐ View on GitHub</a>
-                <a class="btn btn-outline" href="#docker">🐳 Docker Quick Start</a>
+                <a class="btn btn-primary" href="https://github.com/Seji64/LAPS-WebUI" target="_blank" rel="noopener">
+                    ⭐ View on GitHub
+                </a>
+                <a class="btn btn-outline" href="#docker">
+                    🐳 Docker Quick Start
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- Features -->
     <section>
         <div class="container">
             <h2>Features</h2>
@@ -131,22 +190,24 @@
         </div>
     </section>
 
+    <!-- Screenshots -->
     <section style="background: var(--surface);">
         <div class="container">
             <h2>Screenshots</h2>
             <div class="screenshots">
                 <figure class="screenshot">
-                    <img src="screenshots/screenshot01.png" alt="LAPS-WebUI computer search and password display" loading="lazy" />
+                    <img src="screenshot01.png" alt="LAPS-WebUI computer search and password display" loading="lazy" />
                     <figcaption>Computer search with LAPS password details</figcaption>
                 </figure>
                 <figure class="screenshot">
-                    <img src="screenshots/screenshot02.png" alt="LAPS-WebUI password history view" loading="lazy" />
+                    <img src="screenshot02.png" alt="LAPS-WebUI password history view" loading="lazy" />
                     <figcaption>LAPS v2 password history tab</figcaption>
                 </figure>
             </div>
         </div>
     </section>
 
+    <!-- Docker Quick Start -->
     <section id="docker">
         <div class="container">
             <h2>Docker Quick Start</h2>
@@ -166,6 +227,7 @@
         </div>
     </section>
 
+    <!-- Requirements -->
     <section style="background: var(--surface);">
         <div class="container">
             <h2>Requirements</h2>
@@ -178,6 +240,7 @@
         </div>
     </section>
 
+    <!-- Configuration -->
     <section>
         <div class="container">
             <h2>Configuration</h2>
@@ -204,6 +267,7 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer>
         <div class="container">
             <p>LAPS-WebUI is released under the <a href="https://github.com/Seji64/LAPS-WebUI/blob/main/LICENSE">MIT License</a>.</p>
