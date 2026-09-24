@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A modern web interface for Microsoft LAPS (Local Administrator Password Solution). Supports LAPS v1 and v2, multiple AD domains, Kerberos decryption." />
+    <meta name="theme-color" content="#1976D2" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>LAPS-WebUI — Modern Web Interface for Microsoft LAPS</title>
+    <style>
+        :root {
+            --primary: #1976D2;
+            --primary-dark: #1565C0;
+            --bg: #FAFAFA;
+            --surface: #FFFFFF;
+            --text: #212121;
+            --text-secondary: #757575;
+            --border: #E0E0E0;
+            --code-bg: #F5F5F5;
+            --success: #43A047;
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+        .hero {
+            background: linear-gradient(135deg, #1a237e 0%, #1976D2 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 28px; }
+        .badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+        .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: transform 0.15s, box-shadow 0.15s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-primary { background: white; color: var(--primary-dark); }
+        .btn-outline { border: 2px solid rgba(255,255,255,0.5); color: white; }
+        .btn-outline:hover { border-color: white; }
+        section { padding: 60px 0; }
+        section:nth-child(even) { background: var(--surface); }
+        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.3px; }
+        h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 32px; }
+        .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: box-shadow 0.2s; }
+        .feature-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .feature-icon { font-size: 2rem; margin-bottom: 12px; }
+        .screenshots { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-top: 32px; }
+        .screenshot { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: #eee; }
+        .screenshot img { width: 100%; height: auto; display: block; }
+        .screenshot figcaption { padding: 12px; font-size: 0.85rem; color: var(--text-secondary); text-align: center; background: var(--surface); }
+        pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; overflow-x: auto; font-size: 0.85rem; line-height: 1.7; }
+        code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; }
+        .req-list { list-style: none; padding: 0; }
+        .req-list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; }
+        .req-list li:last-child { border-bottom: none; }
+        .check { color: var(--success); font-weight: bold; flex-shrink: 0; }
+        footer { background: #263238; color: rgba(255,255,255,0.7); padding: 40px 0; text-align: center; font-size: 0.9rem; }
+        footer a { color: rgba(255,255,255,0.9); }
+        footer .footer-links { margin-top: 12px; }
+        footer .footer-links a { margin: 0 12px; }
+        @media (max-width: 640px) {
+            .hero { padding: 48px 0 36px; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero p { font-size: 1rem; }
+            section { padding: 40px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="container">
+            <div class="badge-row">
+                <span class="badge">MIT License</span>
+                <span class="badge">LAPS v1 &amp; v2</span>
+                <span class="badge">Multi-Domain</span>
+                <span class="badge">Docker Ready</span>
+            </div>
+            <h1>LAPS-WebUI</h1>
+            <p>A modern web interface for Microsoft LAPS — view and manage local administrator passwords across your Active Directory domains.</p>
+            <div class="hero-buttons">
+                <a class="btn btn-primary" href="https://github.com/Seji64/LAPS-WebUI" target="_blank" rel="noopener">⭐ View on GitHub</a>
+                <a class="btn btn-outline" href="#docker">🐳 Docker Quick Start</a>
+            </div>
+        </div>
+    </div>
+
+    <section>
+        <div class="container">
+            <h2>Features</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>LAPS v1 &amp; v2 Support</h3>
+                    <p>Full support for both legacy LAPS v1 and modern LAPS v2, including encrypted password decryption via Kerberos and DCE-RPC.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏢</div>
+                    <h3>Multi-Domain</h3>
+                    <p>Connect to multiple Active Directory domains from a single instance. Switch between domains seamlessly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔑</div>
+                    <h3>AD Authentication</h3>
+                    <p>No separate user management needed — access is fully controlled by Active Directory permissions. Authenticate directly against your domain controllers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🐳</div>
+                    <h3>Docker Deployment</h3>
+                    <p>One-line Docker deployment with full environment variable configuration. Bare-metal deployment also supported.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Password History</h3>
+                    <p>View historical LAPS passwords for LAPS v2, with account names and timestamps. Track password rotation events.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌙</div>
+                    <h3>Dark Mode</h3>
+                    <p>Built-in dark/light theme toggle. MudBlazor-powered Material Design components for a clean, modern interface.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--surface);">
+        <div class="container">
+            <h2>Screenshots</h2>
+            <div class="screenshots">
+                <figure class="screenshot">
+                    <img src="screenshots/screenshot01.png" alt="LAPS-WebUI computer search and password display" loading="lazy" />
+                    <figcaption>Computer search with LAPS password details</figcaption>
+                </figure>
+                <figure class="screenshot">
+                    <img src="screenshots/screenshot02.png" alt="LAPS-WebUI password history view" loading="lazy" />
+                    <figcaption>LAPS v2 password history tab</figcaption>
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <section id="docker">
+        <div class="container">
+            <h2>Docker Quick Start</h2>
+            <p>Running LAPS-WebUI in Docker is straightforward. Replace the example values with your own environment:</p>
+            <pre><code>docker run -d \
+  --name=lapswebui \
+  -e Domains__0__Name=example.com \
+  -e Domains__0__Ldap__Server=ldap.example.com \
+  -e Domains__0__Ldap__Port=636 \
+  -e Domains__0__Ldap__UseSSL=true \
+  -e Domains__0__Ldap__TrustAllCertificates=true \
+  -e Domains__0__Ldap__SearchBase='DC=example,DC=com' \
+  -p 8080:8080 \
+  --restart unless-stopped \
+  ghcr.io/seji64/laps-webui:latest</code></pre>
+            <p style="margin-top: 16px;">Access the app at <code>http://localhost:8080</code>.</p>
+        </div>
+    </section>
+
+    <section style="background: var(--surface);">
+        <div class="container">
+            <h2>Requirements</h2>
+            <ul class="req-list">
+                <li><span class="check">✓</span> Active Directory with Microsoft LAPS installed</li>
+                <li><span class="check">✓</span> .NET 10 runtime (bare metal) or a Docker host</li>
+                <li><span class="check">✓</span> Python 3 with <code>dpapi-ng[kerberos]</code> (for LAPS v2 encrypted password decryption)</li>
+                <li><span class="check">✓</span> Network access to domain controllers (LDAP + DCE-RPC for LAPS v2)</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Configuration</h2>
+            <p>Configure your domains via <code>appsettings.json</code> or environment variables. Here's an example configuration:</p>
+            <pre><code>{
+  "Domains": [
+    {
+      "Name": "example.com",
+      "Ldap": {
+        "Server": "ldap.example.com",
+        "Port": 636,
+        "UseSSL": true,
+        "TrustAllCertificates": true,
+        "SearchBase": "OU=Clients,DC=example,DC=com"
+      },
+      "Laps": {
+        "ForceVersion": "All",
+        "EncryptionDisabled": false
+      }
+    }
+  ]
+}</code></pre>
+            <p style="margin-top: 16px;">See <a href="https://github.com/Seji64/LAPS-WebUI/blob/main/src/appsettings.json.example"><code>appsettings.json.example</code></a> for the complete reference.</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>LAPS-WebUI is released under the <a href="https://github.com/Seji64/LAPS-WebUI/blob/main/LICENSE">MIT License</a>.</p>
+            <div class="footer-links">
+                <a href="https://github.com/Seji64/LAPS-WebUI" target="_blank" rel="noopener">GitHub Repository</a>
+                <a href="https://github.com/Seji64/LAPS-WebUI/releases" target="_blank" rel="noopener">Releases</a>
+                <a href="https://github.com/Seji64/LAPS-WebUI/issues" target="_blank" rel="noopener">Issue Tracker</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
