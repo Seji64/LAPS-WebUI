@@ -58,6 +58,17 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    // MudBlazor sets inline styles, so style-src needs 'unsafe-inline'; scripts stay restricted to 'self'
+    context.Response.Headers.ContentSecurityPolicy =
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; " +
+        "form-action 'self'; frame-ancestors 'none'";
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    await next();
+});
 app.UseStaticFiles();
 app.UseRouting();
 
