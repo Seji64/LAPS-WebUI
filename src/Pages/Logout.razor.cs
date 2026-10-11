@@ -4,12 +4,13 @@
     {
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (await SessionManager.IsUserLoggedInAsync())
+            Models.UserSession? session = await SessionManager.GetSessionAsync();
+            if (session != null)
             {
-                string username = await SessionManager.GetUsernameAsync();
-                Serilog.Log.Information("User logged out: {Username}", username);
-                await SessionManager.LogoutAsync();
+                Serilog.Log.Information("User logged out: {Username}", session.Credential.UserName);
             }
+
+            await SessionManager.LogoutAsync();
 
             await Task.Delay(500);
             NavigationManager.NavigateTo("/");

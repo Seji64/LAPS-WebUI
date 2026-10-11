@@ -40,7 +40,11 @@ builder.Services.AddHealthChecks();
 builder.Services.Configure<List<Domain>>(builder.Configuration.GetSection("Domains"));
 builder.Services.AddScoped<LdapService>();
 builder.Services.AddScoped<SessionManagerService>();
-builder.Services.AddSingleton<CryptService>();
+builder.Services.AddOptions<UserSessionOptions>()
+    .Bind(builder.Configuration.GetSection("Session"))
+    .Validate(o => o.IdleTimeoutMinutes > 0 && o.LifetimeMinutes > 0, "Session: IdleTimeoutMinutes and LifetimeMinutes must be greater than 0")
+    .ValidateOnStart();
+builder.Services.AddSingleton<SessionStore>();
 builder.Services.AddOptions<LoginRateLimitOptions>()
     .Bind(builder.Configuration.GetSection("LoginRateLimit"))
     .Validate(o => !o.Enabled || (o.MaxFailedAttempts > 0 && o.WindowMinutes > 0), "LoginRateLimit: MaxFailedAttempts and WindowMinutes must be greater than 0")

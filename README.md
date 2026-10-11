@@ -83,6 +83,19 @@ Failed logins can be limited per client IP, so a single source can't guess passw
 Or via environment variables: `LoginRateLimit__Enabled=true`, `LoginRateLimit__MaxFailedAttempts=10`, `LoginRateLimit__WindowMinutes=15`.
 Behind a reverse proxy, also set `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` (see above), otherwise all users share the proxy's IP and therefore one limit.
 
+### ⏱️ Session timeout
+
+Credentials stay on the server; the browser only holds a random session ID. A session ends after a period without activity, after a maximum lifetime, on logout, or when the app restarts:
+
+```json
+"Session": {
+  "IdleTimeoutMinutes": 60, // Default: 60
+  "LifetimeMinutes": 480 // Default: 480 (8 hours)
+}
+```
+
+Or via environment variables: `Session__IdleTimeoutMinutes=60`, `Session__LifetimeMinutes=480`.
+
 ### 📝 Logging to file (Serilog)
 
 LAPS-WebUI uses **Serilog** for logging.
