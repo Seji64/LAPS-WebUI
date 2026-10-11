@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": ["before 6am on monday"],
+  "packageRules": [
+    {
+      "description": "One PR for all GitHub Actions updates (SHA pins plus their version comments)",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "One PR for non-major NuGet updates",
+      "matchManagers": ["nuget"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "NuGet packages"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "dpapi-ng is installed with a pinned version in the Dockerfile",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["\"(?<depName>dpapi-ng)\\[kerberos\\]==(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "pypi"
+    }
+  ]
+}

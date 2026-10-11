@@ -46,5 +46,14 @@
       }
     }
   ],
+  "LoginRateLimit": {
+    "Enabled": false, // Allowed Values: true, false | Default: false
+    "MaxFailedAttempts": 10, // Failed logins per client IP within the window | Default: 10
+    "WindowMinutes": 15 // Default: 15
+  },
+  "Session": {
+    "IdleTimeoutMinutes": 60, // Logout after this many minutes without activity | Default: 60
+    "LifetimeMinutes": 480 // Logout after this many minutes regardless of activity | Default: 480
+  },
   "AllowedHosts": "*"
 }

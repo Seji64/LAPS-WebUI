@@ -40,7 +40,16 @@ builder.Services.AddHealthChecks();
 builder.Services.Configure<List<Domain>>(builder.Configuration.GetSection("Domains"));
 builder.Services.AddScoped<LdapService>();
 builder.Services.AddScoped<SessionManagerService>();
-builder.Services.AddSingleton<CryptService>();
+builder.Services.AddOptions<UserSessionOptions>()
+    .Bind(builder.Configuration.GetSection("Session"))
+    .Validate(o => o.IdleTimeoutMinutes > 0 && o.LifetimeMinutes > 0, "Session: IdleTimeoutMinutes and LifetimeMinutes must be greater than 0")
+    .ValidateOnStart();
+builder.Services.AddSingleton<SessionStore>();
+builder.Services.AddOptions<LoginRateLimitOptions>()
+    .Bind(builder.Configuration.GetSection("LoginRateLimit"))
+    .Validate(o => !o.Enabled || (o.MaxFailedAttempts > 0 && o.WindowMinutes > 0), "LoginRateLimit: MaxFailedAttempts and WindowMinutes must be greater than 0")
+    .ValidateOnStart();
+builder.Services.AddSingleton<LoginThrottleService>();
 
 WebApplication app = builder.Build();
 
@@ -53,6 +62,17 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    // MudBlazor sets inline styles, so style-src needs 'unsafe-inline'; scripts stay restricted to 'self'
+    context.Response.Headers.ContentSecurityPolicy =
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; " +
+        "form-action 'self'; frame-ancestors 'none'";
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    await next();
+});
 app.UseStaticFiles();
 app.UseRouting();
 

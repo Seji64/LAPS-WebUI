@@ -12,7 +12,7 @@
 </MudDialog>
 @code {
     #nullable disable
-    // ponytail: ContentText may contain inline HTML (e.g. <pre>); caller-controlled, no escaping
+    // ContentText is rendered as raw HTML; callers must HTML-encode untrusted values (e.g. AD attributes)
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string ContentText { get; set; }
     [Parameter] public string ConfirmButtonText { get; set; }

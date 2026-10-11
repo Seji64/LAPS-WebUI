@@ -95,6 +95,7 @@
             line-height: 1.7;
         }
         code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; }
+        p code { overflow-wrap: anywhere; }
 
         /* Requirements list */
         .req-list { list-style: none; padding: 0; }
@@ -264,6 +265,34 @@
   ]
 }</code></pre>
             <p style="margin-top: 16px;">See <a href="https://github.com/Seji64/LAPS-WebUI/blob/main/src/appsettings.json.example"><code>appsettings.json.example</code></a> for the complete reference.</p>
+        </div>
+    </section>
+
+    <!-- Security -->
+    <section id="security" style="background: var(--surface);">
+        <div class="container">
+            <h2>Security</h2>
+            <ul class="req-list">
+                <li><span class="check">✓</span> AD credentials stay on the server — the browser only holds a random session ID</li>
+                <li><span class="check">✓</span> Sessions end after inactivity (default 60&nbsp;min), after a maximum lifetime (default 8&nbsp;h) and on logout</li>
+                <li><span class="check">✓</span> Optional login rate limiting per client IP against password guessing and mass AD lockouts</li>
+                <li><span class="check">✓</span> Content-Security-Policy and security headers on every response</li>
+                <li><span class="check">✓</span> Audit log for logins, password retrievals and password resets</li>
+            </ul>
+            <h3 style="margin-top: 32px;">Session timeout and login rate limiting</h3>
+            <p>Both are configured in <code>appsettings.json</code> or via environment variables (e.g. <code>Session__IdleTimeoutMinutes</code>, <code>LoginRateLimit__Enabled</code>). Login rate limiting is off by default:</p>
+            <pre style="margin-top: 16px;"><code>{
+  "Session": {
+    "IdleTimeoutMinutes": 60,
+    "LifetimeMinutes": 480
+  },
+  "LoginRateLimit": {
+    "Enabled": true,
+    "MaxFailedAttempts": 10,
+    "WindowMinutes": 15
+  }
+}</code></pre>
+            <p style="margin-top: 16px;">Behind a reverse proxy, set <code>ASPNETCORE_FORWARDEDHEADERS_ENABLED=true</code> so the app sees the real client IP. Otherwise all users share the proxy's IP and therefore one limit.</p>
         </div>
     </section>
 

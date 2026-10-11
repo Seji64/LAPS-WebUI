@@ -3,6 +3,7 @@ using LAPS_WebUI.Enums;
 using LAPS_WebUI.Models;
 using MudBlazor;
 using Serilog;
+using System.Net;
 
 namespace LAPS_WebUI.Pages
 {
@@ -11,7 +12,6 @@ namespace LAPS_WebUI.Pages
         private readonly Dictionary<string, MudTabs?> _mudTabsDict = [];
         private MudAutocomplete<AdComputer>? _autoCompleteSearchBox;
         private bool Authenticated { get; set; } = true;
-        private LdapForNet.LdapCredential? LdapCredential { get; set; }
         private List<AdComputer> SelectedComputers { get; set; } = [];
         private string? DomainName { get; set; }
         private string DateDisplayFormat { get; set; } = "dd.MM.yyyy HH:mm:ss";
@@ -19,21 +19,35 @@ namespace LAPS_WebUI.Pages
         {
             if (firstRender)
             {
-                Authenticated = await SessionManager.IsUserLoggedInAsync();
+                UserSession? session = await SessionManager.GetSessionAsync();
+                Authenticated = session != null;
 
-                if (!Authenticated)
+                if (session is null)
                 {
                     NavigationManager.NavigateTo("/login");
                 }
                 else
                 {
-                    LdapCredential = await SessionManager.GetLdapCredentialsAsync();
-                    DomainName = await SessionManager.GetDomainAsync();
+                    DomainName = session.DomainName;
                     DateDisplayFormat = LdapService.GetDomains().Single(d => d.Name == DomainName).Laps.DateDisplayFormat;
                 }
 
                 StateHasChanged();
             }
+        }
+
+        // Looked up per action, so an expired or logged-out session stops working right away
+        private async Task<LdapForNet.LdapCredential?> GetCredentialAsync()
+        {
+            UserSession? session = await SessionManager.GetSessionAsync();
+
+            if (session is null)
+            {
+                Snackbar.Add("Your session has expired. Please log in again.", Severity.Warning);
+                NavigationManager.NavigateTo("/login");
+            }
+
+            return session?.Credential;
         }
 
         private async Task OnSelectedItemChangedAsync(AdComputer? value)
@@ -47,6 +61,12 @@ namespace LAPS_WebUI.Pages
 
         private async Task ClearLapsPassword(AdComputer computer)
         {
+            LdapForNet.LdapCredential? credential = await GetCredentialAsync();
+            if (credential is null)
+            {
+                return;
+            }
+
             try
             {
 
@@ -61,9 +81,10 @@ namespace LAPS_WebUI.Pages
                         _ => LAPSVersion.v1
                     };
 
+                    string encodedName = WebUtility.HtmlEncode(computer.Name);
                     DialogParameters parameters = new() { ["ContentText"] = $"""
-                        Clear LAPS {version} Password on Computer <code>{computer.Name}</code>?
-                        <p>You have to invoke '<code>gpupdate /force</code>' on <code>{computer.Name}</code> in order to set a new LAPS password.</p>
+                        Clear LAPS {version} Password on Computer <code>{encodedName}</code>?
+                        <p>You have to invoke '<code>gpupdate /force</code>' on <code>{encodedName}</code> in order to set a new LAPS password.</p>
                         """, ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
                     IDialogReference dialog = await Dialog.ShowAsync<Confirmation>("Clear LAPS Password", parameters,new DialogOptions());
                     DialogResult? result = await dialog.Result;
@@ -73,13 +94,12 @@ namespace LAPS_WebUI.Pages
                         computer.LapsInformations.Clear();
                         await InvokeAsync(StateHasChanged);
                         if (await LdapService.ClearLapsPassword(DomainName!,
-                                LdapCredential!,
+                                credential,
                                 computer.DistinguishedName, version))
                         {
                             Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
-                            string currentUsername = await SessionManager.GetUsernameAsync();
                             Log.ForContext("Audit", true)
-                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, currentUsername);
+                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, credential.UserName);
                         }
                         else
                         {
@@ -102,6 +122,11 @@ namespace LAPS_WebUI.Pages
 
         private async Task RefreshComputerDetailsAsync(AdComputer computer, bool supressNotify = false)
         {
+            LdapForNet.LdapCredential? credential = await GetCredentialAsync();
+            if (credential is null)
+            {
+                return;
+            }
 
             AdComputer? placeHolder = null;
             List<LapsInformation> backup = [];
@@ -118,7 +143,7 @@ namespace LAPS_WebUI.Pages
                 placeHolder.LapsInformations = null;
                 await InvokeAsync(StateHasChanged);
 
-                AdComputer? tmp = await LdapService.GetAdComputerAsync(DomainName!, LdapCredential!, computer.DistinguishedName);
+                AdComputer? tmp = await LdapService.GetAdComputerAsync(DomainName!, credential, computer.DistinguishedName);
 
                 if (tmp != null)
                 {
@@ -151,13 +176,19 @@ namespace LAPS_WebUI.Pages
 
         private async Task FetchComputerDetailsAsync(string distinguishedName, string computerName)
         {
+            LdapForNet.LdapCredential? credential = await GetCredentialAsync();
+            if (credential is null)
+            {
+                return;
+            }
+
             try
             {
                 AdComputer placeHolder = new AdComputer(distinguishedName, computerName);
                 SelectedComputers.Add(placeHolder);
                 await InvokeAsync(StateHasChanged);
 
-                AdComputer? adComputerObject = await LdapService.GetAdComputerAsync(DomainName!, LdapCredential!, distinguishedName);
+                AdComputer? adComputerObject = await LdapService.GetAdComputerAsync(DomainName!, credential, distinguishedName);
                 AdComputer? selectedComputer = SelectedComputers.SingleOrDefault(x => x.Name == computerName);
 
                 if (adComputerObject != null && selectedComputer != null)
@@ -196,7 +227,14 @@ namespace LAPS_WebUI.Pages
             {
                 return [];
             }
-            return await LdapService.SearchAdComputersAsync(DomainName!, LdapCredential!, value);
+
+            LdapForNet.LdapCredential? credential = await GetCredentialAsync();
+            if (credential is null)
+            {
+                return [];
+            }
+
+            return await LdapService.SearchAdComputersAsync(DomainName!, credential, value);
 
         }
 
