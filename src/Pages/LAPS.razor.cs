@@ -3,6 +3,7 @@ using LAPS_WebUI.Enums;
 using LAPS_WebUI.Models;
 using MudBlazor;
 using Serilog;
+using System.Net;
 
 namespace LAPS_WebUI.Pages
 {
@@ -61,9 +62,10 @@ namespace LAPS_WebUI.Pages
                         _ => LAPSVersion.v1
                     };
 
+                    string encodedName = WebUtility.HtmlEncode(computer.Name);
                     DialogParameters parameters = new() { ["ContentText"] = $"""
-                        Clear LAPS {version} Password on Computer <code>{computer.Name}</code>?
-                        <p>You have to invoke '<code>gpupdate /force</code>' on <code>{computer.Name}</code> in order to set a new LAPS password.</p>
+                        Clear LAPS {version} Password on Computer <code>{encodedName}</code>?
+                        <p>You have to invoke '<code>gpupdate /force</code>' on <code>{encodedName}</code> in order to set a new LAPS password.</p>
                         """, ["CancelButtonText"] = "Cancel", ["ConfirmButtonText"] = "Clear", ["ConfirmButtonColor"] = Color.Error };
                     IDialogReference dialog = await Dialog.ShowAsync<Confirmation>("Clear LAPS Password", parameters,new DialogOptions());
                     DialogResult? result = await dialog.Result;
@@ -77,9 +79,8 @@ namespace LAPS_WebUI.Pages
                                 computer.DistinguishedName, version))
                         {
                             Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
-                            string currentUsername = await SessionManager.GetUsernameAsync();
                             Log.ForContext("Audit", true)
-                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, currentUsername);
+                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, LdapCredential!.UserName);
                         }
                         else
                         {

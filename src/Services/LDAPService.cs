@@ -60,6 +60,12 @@ namespace LAPS_WebUI.Services
 
         public async Task<bool> TestCredentialsAsync(string domainName, string username, string password)
         {
+            // An empty password (or one cut short at a NUL by native marshaling) is an unauthenticated bind, which AD reports as success
+            if (string.IsNullOrEmpty(password) || password.Contains('\0') || username.Contains('\0'))
+            {
+                return false;
+            }
+
             using LdapConnection? connection = await CreateBindAsync(domainName, username, password);
             return connection != null;
         }
