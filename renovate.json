@@ -4,8 +4,6 @@
     "config:recommended",
     "helpers:pinGitHubActionDigests"
   ],
-  "timezone": "Europe/Berlin",
-  "schedule": ["before 6am on monday"],
   "packageRules": [
     {
       "description": "One PR for all GitHub Actions updates (SHA pins plus their version comments)",

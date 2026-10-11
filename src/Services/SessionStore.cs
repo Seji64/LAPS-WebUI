@@ -5,8 +5,7 @@ using System.Security.Cryptography;
 
 namespace LAPS_WebUI.Services
 {
-    // Keeps logged-in users' credentials in server memory; the browser only holds a random session ID.
-    // Sessions end after the idle timeout, the absolute lifetime, a logout, or an app restart.
+    // Keeps logged-in users' credentials in server memory; the browser only holds a random session ID
     public class SessionStore(IOptions<UserSessionOptions> options)
     {
         private readonly MemoryCache _sessions = new(new MemoryCacheOptions());
