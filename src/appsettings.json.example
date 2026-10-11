@@ -46,5 +46,10 @@
       }
     }
   ],
+  "LoginRateLimit": {
+    "Enabled": false, // Allowed Values: true, false | Default: false
+    "MaxFailedAttempts": 10, // Failed logins per client IP within the window | Default: 10
+    "WindowMinutes": 15 // Default: 15
+  },
   "AllowedHosts": "*"
 }

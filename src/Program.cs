@@ -41,6 +41,11 @@ builder.Services.Configure<List<Domain>>(builder.Configuration.GetSection("Domai
 builder.Services.AddScoped<LdapService>();
 builder.Services.AddScoped<SessionManagerService>();
 builder.Services.AddSingleton<CryptService>();
+builder.Services.AddOptions<LoginRateLimitOptions>()
+    .Bind(builder.Configuration.GetSection("LoginRateLimit"))
+    .Validate(o => !o.Enabled || (o.MaxFailedAttempts > 0 && o.WindowMinutes > 0), "LoginRateLimit: MaxFailedAttempts and WindowMinutes must be greater than 0")
+    .ValidateOnStart();
+builder.Services.AddSingleton<LoginThrottleService>();
 
 WebApplication app = builder.Build();
 

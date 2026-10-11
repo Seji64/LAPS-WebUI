@@ -66,6 +66,22 @@ docker run -d \
 ## ⚙️ Advanced Configuration
 - Listen address and port: [Learn more](https://andrewlock.net/exploring-the-dotnet-8-preview-updates-to-docker-images-in-dotnet-8/)
 - Behind a reverse proxy: WebSocket support must be enabled!
+- Behind a reverse proxy: set `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` so the app sees the client IP from `X-Forwarded-For`. Only set this when a proxy sits in front of the app, otherwise clients can fake their IP.
+
+### 🔒 Login rate limiting
+
+Failed logins can be limited per client IP, so a single source can't guess passwords or lock out AD accounts in bulk. It is disabled by default:
+
+```json
+"LoginRateLimit": {
+  "Enabled": true,
+  "MaxFailedAttempts": 10, // Default: 10
+  "WindowMinutes": 15 // Default: 15
+}
+```
+
+Or via environment variables: `LoginRateLimit__Enabled=true`, `LoginRateLimit__MaxFailedAttempts=10`, `LoginRateLimit__WindowMinutes=15`.
+Behind a reverse proxy, also set `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` (see above), otherwise all users share the proxy's IP and therefore one limit.
 
 ### 📝 Logging to file (Serilog)
 
