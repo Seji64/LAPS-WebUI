@@ -10,7 +10,6 @@ namespace LAPS_WebUI.Services
         SessionStore sessionStore)
     {
         private const string SessionIdKey = "sessionId";
-        private string? _sessionId;
 
         public List<string> GetDomains()
         {
@@ -20,8 +19,8 @@ namespace LAPS_WebUI.Services
         // Null once the session expired or was logged out, also from another tab sharing the ID
         public async Task<UserSession?> GetSessionAsync()
         {
-            _sessionId ??= await sessionStorageService.GetItemAsync<string>(SessionIdKey);
-            return _sessionId is null ? null : sessionStore.Get(_sessionId);
+            string? sessionId = await sessionStorageService.GetItemAsync<string>(SessionIdKey);
+            return sessionId is null ? null : sessionStore.Get(sessionId);
         }
 
         public async Task<bool> IsUserLoggedInAsync()
@@ -37,19 +36,18 @@ namespace LAPS_WebUI.Services
             }
 
             await LogoutAsync();
-            _sessionId = sessionStore.Create(new UserSession(domainName, new LdapCredential { UserName = username, Password = password }));
-            await sessionStorageService.SetItemAsync(SessionIdKey, _sessionId);
+            string sessionId = sessionStore.Create(new UserSession(domainName, new LdapCredential { UserName = username, Password = password }));
+            await sessionStorageService.SetItemAsync(SessionIdKey, sessionId);
 
             return true;
         }
 
         public async Task LogoutAsync()
         {
-            _sessionId ??= await sessionStorageService.GetItemAsync<string>(SessionIdKey);
-            if (_sessionId is not null)
+            string? sessionId = await sessionStorageService.GetItemAsync<string>(SessionIdKey);
+            if (sessionId is not null)
             {
-                sessionStore.Remove(_sessionId);
-                _sessionId = null;
+                sessionStore.Remove(sessionId);
             }
 
             await sessionStorageService.ClearAsync();

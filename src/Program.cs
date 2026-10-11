@@ -34,7 +34,6 @@ builder.Services.AddMudServices(config =>
 });
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddClipboard();
-builder.Services.AddDataProtection();
 builder.Services.AddHealthChecks();
 
 builder.Services.Configure<List<Domain>>(builder.Configuration.GetSection("Domains"));
