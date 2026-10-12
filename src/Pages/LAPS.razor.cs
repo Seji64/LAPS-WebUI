@@ -99,7 +99,7 @@ namespace LAPS_WebUI.Pages
                         {
                             Snackbar.Add($"LAPS {version} Password for computer '{computer.Name}' successfully cleared! - Please invoke 'gpupdate' on {computer.Name} to set a new LAPS Password", Severity.Success);
                             Log.ForContext("Audit", true)
-                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LAPSVersion}) by user '{UserName}'", computer.Name, version, credential.UserName);
+                                .Information("LAPS password cleared for computer '{ComputerName}' (LAPS version: {LapsVersion}) by user '{UserName}'", computer.Name, version, credential.UserName);
                         }
                         else
                         {
@@ -111,7 +111,7 @@ namespace LAPS_WebUI.Pages
             }
             catch (Exception ex)
             {
-                Log.Error("{ErrorMessage}", ex.Message);
+                Log.Error(ex,"{ErrorMessage}", ex.Message);
                 Snackbar.Add($"Failed to reset LAPS password for computer {computer.Name}", Severity.Error);
             }
             finally
@@ -158,7 +158,7 @@ namespace LAPS_WebUI.Pages
             }
             catch (Exception ex)
             {
-                Log.Error("{ErrorMessage}", ex.Message);
+                Log.Error(ex,"{ErrorMessage}", ex.Message);
 
                 placeHolder?.LapsInformations = backup;
 
@@ -209,7 +209,7 @@ namespace LAPS_WebUI.Pages
             }
             catch (Exception ex)
             {
-                Log.Error("{ErrorMessage}", ex.Message);
+                Log.Error(ex,"{ErrorMessage}", ex.Message);
                 SelectedComputers.RemoveAll(x => x.Name == computerName);
                 Snackbar.Add($"Failed to fetch LAPS data for computer {computerName}\nError: {ex.Message}", Severity.Error);
             }

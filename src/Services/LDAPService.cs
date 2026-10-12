@@ -51,7 +51,7 @@ namespace LAPS_WebUI.Services
             }
             catch (Exception ex)
             {
-                Log.Error("{ErrorMessage}",ex.Message);
+                Log.Error(ex,"{ErrorMessage}",ex.Message);
                 return null;
             }
 
@@ -349,7 +349,7 @@ namespace LAPS_WebUI.Services
             }
             catch (Exception ex)
             {
-                Log.Error("{ErrorMessage}", ex.Message);
+                Log.Error(ex,"{ErrorMessage}", ex.Message);
                 return [];
             }
         }
